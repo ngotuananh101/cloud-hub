@@ -1,5 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
-import React from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/GuestLayout';
 
 export default function Login() {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -81,19 +83,35 @@ export default function Login() {
                                     Forgot Password?
                                 </Link>
                             </div>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                placeholder="••••••••"
-                                required
-                                value={data.password}
-                                onChange={(e) =>
-                                    setData('password', e.target.value)
-                                }
-                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 font-mono text-sm tracking-widest ring-1 ring-slate-200 transition-all ring-inset placeholder:tracking-widest focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="current-password"
+                                    placeholder="••••••••"
+                                    required
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
+                                    className="rounded-lg border-0 bg-slate-50/80 py-5 pr-12 pl-4 font-mono text-sm tracking-widest ring-1 ring-slate-200 transition-all ring-inset placeholder:tracking-widest focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    tabIndex={-1}
+                                    className="absolute top-1/2 right-4 -translate-y-1/2 text-[#8c7a7a] transition-colors hover:text-[#c12222] focus:outline-none"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
                             {errors.password && (
                                 <div className="mt-1 text-[11px] font-semibold text-red-500">
                                     {errors.password}
