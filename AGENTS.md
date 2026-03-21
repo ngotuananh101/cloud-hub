@@ -2,6 +2,8 @@
 *(Context file for AI Agents)*
 
 ## Environment & Tech Stack
+- **OS**: Windows 11
+- **Node Packages**: Composer, PNPM
 - **Core Framework**: Laravel 13 (Backend) + React 19 (Frontend)
 - **Bridging**: Inertia.js 2.0
 - **Languages**: PHP 8.3, TypeScript 5.7
