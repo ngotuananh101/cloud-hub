@@ -21,4 +21,9 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    server: {
+        cors: {
+            origin: '*'
+        }
+    }
 });
