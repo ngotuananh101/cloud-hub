@@ -1,6 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
 import type { PropsWithChildren } from 'react';
+import { ToastProvider } from '@/components/ToastProvider';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function GuestLayout({
     children,
@@ -8,6 +10,8 @@ export default function GuestLayout({
 }: PropsWithChildren<{ title?: string }>) {
     return (
         <>
+            <ToastProvider />
+            <Toaster richColors position="top-right" />
             {title && <Head title={title} />}
             <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-50 p-4 font-sans sm:p-8">
                 {/* Background decorative elements */}
