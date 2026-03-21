@@ -14,5 +14,15 @@
 - Full-stack application utilizing Inertia.js to seamlessly connect Laravel server-side routing/controllers with React client-side pages.
 - UI components are built using modern React principles (Hooks, Server-side rendering ready) and styled via Tailwind CSS.
 
-## Notes & Future Context
-*(To be updated as the project purpose and specific domain rules are clarified)*
+## Business Context & Scope
+- **Main Language**: English (UI and Code)
+- **Core Purpose**: Allow users to connect and manage multiple cloud storage services in a single unified interface (Google Drive, OneDrive, Dropbox, AWS S3, FTP/SFTP).
+- **Users & Roles**: Single user mode (No strict role-based access control or active permissions required).
+
+## Key Features
+- 📁 View files from multiple clouds in one UI
+- 🔄 Copy / Move files seamlessly between different clouds
+- ⬆ Upload / Download capabilities
+- 🔍 Global search across all connected clouds
+- 📊 Storage capacity monitoring
+- 👥 Multiple cloud account management
