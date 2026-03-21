@@ -7,26 +7,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/GuestLayout';
 
-export default function Login() {
+export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
+        name: '',
         email: '',
         password: '',
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('login'));
+        post(route('register'));
     };
 
     return (
-        <GuestLayout title="Login">
+        <GuestLayout title="Register">
             <Card className="relative z-10 w-full max-w-[420px] rounded-2xl border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 p-4">
                 <CardHeader className="text-center pb-8 pt-4">
                     <CardTitle className="text-[22px] font-semibold text-slate-900">
-                        Welcome Back
+                        Create your account
                     </CardTitle>
                     <CardDescription className="mt-2 text-sm text-slate-500">
-                        Enter your credentials to access your vault
+                        Join the next generation of cloud infrastructure
                     </CardDescription>
                 </CardHeader>
 
@@ -34,10 +35,35 @@ export default function Login() {
                     <form className="space-y-5" onSubmit={submit}>
                         <div className="space-y-1.5 text-left">
                             <Label
+                                htmlFor="name"
+                                className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                            >
+                                Full Name
+                            </Label>
+                            <Input
+                                id="name"
+                                name="name"
+                                type="text"
+                                autoComplete="name"
+                                placeholder="Alex Rivera"
+                                required
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 text-sm ring-1 ring-inset ring-slate-200 transition-all focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#c12222]"
+                            />
+                            {errors.name && (
+                                <div className="text-[11px] font-semibold text-red-500 mt-1">
+                                    {errors.name}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5 text-left">
+                            <Label
                                 htmlFor="email"
                                 className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
                             >
-                                Email Address
+                                Work Email
                             </Label>
                             <Input
                                 id="email"
@@ -58,25 +84,17 @@ export default function Login() {
                         </div>
 
                         <div className="space-y-1.5 text-left">
-                            <div className="flex items-center justify-between">
-                                <Label
-                                    htmlFor="password"
-                                    className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
-                                >
-                                    Password
-                                </Label>
-                                <Link
-                                    href="#"
-                                    className="text-[11px] font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]"
-                                >
-                                    Forgot Password?
-                                </Link>
-                            </div>
+                            <Label
+                                htmlFor="password"
+                                className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                            >
+                                Password
+                            </Label>
                             <Input
                                 id="password"
                                 name="password"
                                 type="password"
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                                 placeholder="••••••••"
                                 required
                                 value={data.password}
@@ -96,53 +114,24 @@ export default function Login() {
                                 disabled={processing}
                                 className="w-full rounded-lg bg-[#c12222] py-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#a31c1c] disabled:opacity-50"
                             >
-                                Sign In
+                                Create Account
                             </Button>
                         </div>
                     </form>
-
-                    <div className="mt-8">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                <div className="w-full border-t border-slate-100"></div>
-                            </div>
-                            <div className="relative flex justify-center text-[10px] font-bold tracking-widest">
-                                <span className="bg-white px-4 uppercase text-slate-400">
-                                    Or continue with
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full rounded-lg border-0 bg-slate-50/80 py-5 text-[13px] font-semibold text-slate-700 shadow-none ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-100 hover:text-slate-900 hover:ring-slate-300"
-                            >
-                                <svg className="mr-2 h-[18px] w-[18px]" aria-hidden="true" viewBox="0 0 24 24">
-                                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="#334155"/>
-                                </svg>
-                                <span className="pt-px">Google</span>
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full rounded-lg border-0 bg-slate-50/80 py-5 text-[13px] font-semibold text-slate-700 shadow-none ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-100 hover:text-slate-900 hover:ring-slate-300"
-                            >
-                                <svg className="mr-2 h-[18px] w-[18px]" aria-hidden="true" viewBox="0 0 21 21">
-                                    <path d="M0 0h10v10H0zm11 0h10v10H11zM0 11h10v10H0zm11 0h10v10H11z" fill="#334155"/>
-                                </svg>
-                                <span className="pt-px">Microsoft</span>
-                            </Button>
-                        </div>
-                    </div>
                 </CardContent>
 
-                <CardFooter className="flex justify-center pb-8 pt-2">
+                <CardFooter className="flex flex-col justify-center pb-8 pt-2">
+                    <div className="mb-6 px-4 text-center text-[11px] leading-relaxed text-slate-500">
+                        By clicking "Create Account", you agree to our{' '}
+                        <Link href="#" className="text-[#c12222] hover:underline">Terms of Service</Link>
+                        {' '}and{' '}
+                        <Link href="#" className="text-[#c12222] hover:underline">Privacy Policy</Link>.
+                    </div>
+
                     <div className="text-[13px] text-slate-600">
-                        Don't have an account?{' '}
-                        <Link href={route('register')} className="font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]">
-                            Create account
+                        Already have an account?{' '}
+                        <Link href={route('login')} className="font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]">
+                            Log in
                         </Link>
                     </div>
                 </CardFooter>
