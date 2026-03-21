@@ -1,8 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import type { PropsWithChildren } from 'react';
 
-export default function GuestLayout({ children, title }: PropsWithChildren<{ title?: string }>) {
+export default function GuestLayout({
+    children,
+    title,
+}: PropsWithChildren<{ title?: string }>) {
     return (
         <>
             {title && <Head title={title} />}
@@ -15,12 +18,29 @@ export default function GuestLayout({ children, title }: PropsWithChildren<{ tit
                 </div>
 
                 {/* Page Footer */}
-                <div className="absolute bottom-6 left-0 right-0 hidden w-full items-center justify-between px-12 text-[10px] font-semibold tracking-wider text-slate-400 sm:flex">
-                    <div>© 2024 CLOUDHUB INFRASTRUCTURE. ALL RIGHTS RESERVED.</div>
+                <div className="absolute right-0 bottom-6 left-0 hidden w-full items-center justify-between px-12 text-[10px] font-semibold tracking-wider text-slate-400 sm:flex">
+                    <div>
+                        © 2024 CLOUDHUB INFRASTRUCTURE. ALL RIGHTS RESERVED.
+                    </div>
                     <div className="flex gap-8">
-                        <Link href="#" className="transition-colors hover:text-slate-600">PRIVACY POLICY</Link>
-                        <Link href="#" className="transition-colors hover:text-slate-600">TERMS OF SERVICE</Link>
-                        <Link href="#" className="transition-colors hover:text-slate-600">HELP CENTER</Link>
+                        <Link
+                            href="#"
+                            className="transition-colors hover:text-slate-600"
+                        >
+                            PRIVACY POLICY
+                        </Link>
+                        <Link
+                            href="#"
+                            className="transition-colors hover:text-slate-600"
+                        >
+                            TERMS OF SERVICE
+                        </Link>
+                        <Link
+                            href="#"
+                            className="transition-colors hover:text-slate-600"
+                        >
+                            HELP CENTER
+                        </Link>
                     </div>
                 </div>
             </div>

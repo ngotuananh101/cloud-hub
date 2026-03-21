@@ -2,7 +2,14 @@ import { Link, useForm } from '@inertiajs/react';
 import React from 'react';
 import { route } from 'ziggy-js';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/GuestLayout';
@@ -21,8 +28,8 @@ export default function Register() {
 
     return (
         <GuestLayout title="Register">
-            <Card className="relative z-10 w-full max-w-[420px] rounded-2xl border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 p-4">
-                <CardHeader className="text-center pb-8 pt-4">
+            <Card className="relative z-10 w-full max-w-[420px] rounded-2xl border-0 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100">
+                <CardHeader className="pt-4 pb-8 text-center">
                     <CardTitle className="text-[22px] font-semibold text-slate-900">
                         Create your account
                     </CardTitle>
@@ -36,7 +43,7 @@ export default function Register() {
                         <div className="space-y-1.5 text-left">
                             <Label
                                 htmlFor="name"
-                                className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                                className="text-[11px] font-bold tracking-wider text-slate-500 uppercase"
                             >
                                 Full Name
                             </Label>
@@ -48,11 +55,13 @@ export default function Register() {
                                 placeholder="Alex Rivera"
                                 required
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
-                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 text-sm ring-1 ring-inset ring-slate-200 transition-all focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#c12222]"
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
+                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 text-sm ring-1 ring-slate-200 transition-all ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
                             />
                             {errors.name && (
-                                <div className="text-[11px] font-semibold text-red-500 mt-1">
+                                <div className="mt-1 text-[11px] font-semibold text-red-500">
                                     {errors.name}
                                 </div>
                             )}
@@ -61,7 +70,7 @@ export default function Register() {
                         <div className="space-y-1.5 text-left">
                             <Label
                                 htmlFor="email"
-                                className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                                className="text-[11px] font-bold tracking-wider text-slate-500 uppercase"
                             >
                                 Work Email
                             </Label>
@@ -73,11 +82,13 @@ export default function Register() {
                                 placeholder="name@company.com"
                                 required
                                 value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
-                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 text-sm ring-1 ring-inset ring-slate-200 transition-all focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#c12222]"
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
+                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 text-sm ring-1 ring-slate-200 transition-all ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
                             />
                             {errors.email && (
-                                <div className="text-[11px] font-semibold text-red-500 mt-1">
+                                <div className="mt-1 text-[11px] font-semibold text-red-500">
                                     {errors.email}
                                 </div>
                             )}
@@ -86,7 +97,7 @@ export default function Register() {
                         <div className="space-y-1.5 text-left">
                             <Label
                                 htmlFor="password"
-                                className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                                className="text-[11px] font-bold tracking-wider text-slate-500 uppercase"
                             >
                                 Password
                             </Label>
@@ -98,11 +109,13 @@ export default function Register() {
                                 placeholder="••••••••"
                                 required
                                 value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                className="font-mono text-sm tracking-widest rounded-lg border-0 bg-slate-50/80 px-4 py-5 ring-1 ring-inset ring-slate-200 transition-all placeholder:tracking-widest focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#c12222]"
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
+                                className="rounded-lg border-0 bg-slate-50/80 px-4 py-5 font-mono text-sm tracking-widest ring-1 ring-slate-200 transition-all ring-inset placeholder:tracking-widest focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
                             />
                             {errors.password && (
-                                <div className="text-[11px] font-semibold text-red-500 mt-1">
+                                <div className="mt-1 text-[11px] font-semibold text-red-500">
                                     {errors.password}
                                 </div>
                             )}
@@ -120,17 +133,31 @@ export default function Register() {
                     </form>
                 </CardContent>
 
-                <CardFooter className="flex flex-col justify-center pb-8 pt-2">
+                <CardFooter className="flex flex-col justify-center pt-2 pb-8">
                     <div className="mb-6 px-4 text-center text-[11px] leading-relaxed text-slate-500">
                         By clicking "Create Account", you agree to our{' '}
-                        <Link href="#" className="text-[#c12222] hover:underline">Terms of Service</Link>
-                        {' '}and{' '}
-                        <Link href="#" className="text-[#c12222] hover:underline">Privacy Policy</Link>.
+                        <Link
+                            href="#"
+                            className="text-[#c12222] hover:underline"
+                        >
+                            Terms of Service
+                        </Link>{' '}
+                        and{' '}
+                        <Link
+                            href="#"
+                            className="text-[#c12222] hover:underline"
+                        >
+                            Privacy Policy
+                        </Link>
+                        .
                     </div>
 
                     <div className="text-[13px] text-slate-600">
                         Already have an account?{' '}
-                        <Link href={route('login')} className="font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]">
+                        <Link
+                            href={route('login')}
+                            className="font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]"
+                        >
                             Log in
                         </Link>
                     </div>
