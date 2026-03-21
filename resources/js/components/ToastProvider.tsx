@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 export function ToastProvider() {
     const { flash, errors } = usePage<any>().props;
 
-        useEffect(() => {
+    useEffect(() => {
         if (flash?.success) {
             toast.success(flash.success);
         }

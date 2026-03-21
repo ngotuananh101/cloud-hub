@@ -75,7 +75,7 @@ export default function Login() {
                                     Password
                                 </Label>
                                 <Link
-                                    href="#"
+                                    href={route('password.request')}
                                     className="text-[11px] font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]"
                                 >
                                     Forgot Password?
