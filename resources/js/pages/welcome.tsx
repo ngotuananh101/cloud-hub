@@ -2,7 +2,6 @@ import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 
 export default function Welcome() {
-
     return (
         <>
             <Head title="Welcome">
