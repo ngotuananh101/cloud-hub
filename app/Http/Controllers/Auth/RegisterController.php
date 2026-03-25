@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\DeviceHelper;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,6 +38,11 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
+
+        activity('auth')
+            ->causedBy($user)
+            ->withProperties(DeviceHelper::properties($request))
+            ->log('Registered a new account');
 
         return redirect()->route('verification.notice');
     }

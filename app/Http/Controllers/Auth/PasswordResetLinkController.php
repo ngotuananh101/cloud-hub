@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\DeviceHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -32,6 +33,13 @@ class PasswordResetLinkController extends Controller
         );
 
         if ($status == Password::RESET_LINK_SENT) {
+            activity('auth')
+                ->withProperties(array_merge(
+                    DeviceHelper::properties($request),
+                    ['email' => $request->email]
+                ))
+                ->log('Requested password reset link');
+
             return back()->with('success', __($status));
         }
 

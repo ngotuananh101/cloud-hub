@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\DeviceHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,11 @@ class LoginController extends Controller
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
 
+            activity('auth')
+                ->causedBy(Auth::user())
+                ->withProperties(DeviceHelper::properties($request))
+                ->log('Logged in');
+
             return redirect()->intended(route('home', absolute: false));
         }
 
@@ -58,6 +64,11 @@ class LoginController extends Controller
      */
     public function destroy(Request $request)
     {
+        activity('auth')
+            ->causedBy(Auth::user())
+            ->withProperties(DeviceHelper::properties($request))
+            ->log('Logged out');
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

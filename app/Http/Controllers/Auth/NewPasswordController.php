@@ -42,6 +42,10 @@ class NewPasswordController extends Controller
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
+
+                activity('auth')
+                    ->causedBy($user)
+                    ->log('Reset password');
             }
         );
 
