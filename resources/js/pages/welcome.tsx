@@ -1,6 +1,8 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 
 export default function Welcome() {
+
     return (
         <>
             <Head title="Welcome">
@@ -95,6 +97,16 @@ export default function Welcome() {
                                     >
                                         Deploy now
                                     </a>
+                                </li>
+                                <li>
+                                    <Link
+                                        href={route('logout')}
+                                        method="post"
+                                        as="button"
+                                        className="inline-block rounded-sm border border-black bg-[#1b1b18] px-5 py-1.5 text-sm leading-normal text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
+                                    >
+                                        Logout
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
