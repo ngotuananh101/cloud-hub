@@ -31,7 +31,6 @@ interface AuthUser {
 
 const sidebarNav = [
     {
-        label: 'MAIN',
         items: [
             {
                 name: 'Dashboard',
@@ -88,8 +87,6 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                             </div>
                         </div>
                     </div>
-
-                    <Separator />
 
                     {/* Navigation */}
                     <nav className="flex-1 overflow-y-auto px-3 py-4">
@@ -165,12 +162,9 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                     {/* Top Header */}
                     <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">
                         <div className="flex items-center gap-3">
-                            <span className="text-[14px] font-semibold text-[#c12222]">
-                                Workspace
-                            </span>
                             <Input
                                 type="text"
-                                placeholder="Search files, folders or analytics..."
+                                placeholder="Search..."
                                 className="h-9 w-[320px] rounded-lg border-0 bg-slate-50/80 px-4 text-[12px] ring-1 ring-slate-200 ring-inset placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
                             />
                         </div>
