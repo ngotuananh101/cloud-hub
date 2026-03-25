@@ -117,20 +117,22 @@ export default function Register() {
                                     }
                                     className="rounded-lg border-0 bg-slate-50/80 py-5 pr-12 pl-4 font-mono text-sm tracking-widest ring-1 ring-slate-200 transition-all ring-inset placeholder:tracking-widest focus-visible:ring-2 focus-visible:ring-[#c12222] focus-visible:ring-inset"
                                 />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() =>
                                         setShowPassword(!showPassword)
                                     }
                                     tabIndex={-1}
-                                    className="absolute top-1/2 right-4 -translate-y-1/2 text-[#8c7a7a] transition-colors hover:text-[#c12222] focus:outline-none"
+                                    className="absolute top-1/2 right-4 h-auto w-auto -translate-y-1/2 p-0 text-[#8c7a7a] hover:bg-transparent hover:text-[#c12222]"
                                 >
                                     {showPassword ? (
                                         <EyeOff className="h-4 w-4" />
                                     ) : (
                                         <Eye className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                             {errors.password && (
                                 <div className="mt-1 text-[11px] font-semibold text-red-500">

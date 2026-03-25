@@ -2,6 +2,7 @@ import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Mail } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -32,26 +33,24 @@ export default function VerifyEmail() {
                 </CardHeader>
 
                 <CardContent className="pb-8">
-                    <a
-                        href="mailto:"
-                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c12222] py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#a31c1c]"
+                    <Button
+                        asChild
+                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c12222] py-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#a31c1c]"
                     >
-                        Open Email App
-                    </a>
+                        <a href="mailto:">Open Email App</a>
+                    </Button>
 
                     <div className="mt-6 text-center text-[13px] text-slate-500">
                         Didn't receive the email?{' '}
-                        <button
+                        <Button
                             type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                post(route('verification.send'));
-                            }}
+                            variant="link"
+                            onClick={() => post(route('verification.send'))}
                             disabled={processing}
-                            className="font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]"
+                            className="h-auto p-0 text-[13px] font-semibold text-[#c12222] transition-colors hover:text-[#a31c1c]"
                         >
                             Resend link
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="mt-6 text-center">
