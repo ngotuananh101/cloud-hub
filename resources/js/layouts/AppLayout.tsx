@@ -36,7 +36,6 @@ const sidebarNav = [
                 name: 'Dashboard',
                 icon: LayoutDashboard,
                 route: 'home',
-                active: true,
             },
         ],
     },
@@ -52,7 +51,7 @@ const sidebarNav = [
     },
     {
         label: 'SYSTEM',
-        items: [{ name: 'Settings', icon: Settings, route: null }],
+        items: [{ name: 'Settings', icon: Settings, route: 'settings.account' }],
     },
 ];
 
@@ -96,28 +95,36 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                     {group.label}
                                 </div>
                                 <ul className="space-y-0.5">
-                                    {group.items.map((item) => (
-                                        <li key={item.name}>
-                                            {item.route ? (
-                                                <Link
-                                                    href={route(item.route)}
-                                                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
-                                                        item.active
-                                                            ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                                    }`}
-                                                >
-                                                    <item.icon className="h-4 w-4" />
-                                                    {item.name}
-                                                </Link>
-                                            ) : (
-                                                <span className="flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-400">
+                                    {group.items.map((item) => {
+                                        const isActive = item.route ? route().current(item.route + '*') : false;
+                                        
+                                        return (
+                                            <li key={item.name}>
+                                                {item.route ? (
+                                                    <Link
+                                                        href={route(item.route)}
+                                                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                                            isActive
+                                                                ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                                        }`}
+                                                    >
+                                                        <item.icon className="h-4 w-4" />
+                                                        {item.name}
+                                                    </Link>
+                                                ) : (
+                                                <span className={`flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium ${
+                                                    isActive
+                                                        ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                        : 'text-slate-400'
+                                                }`}>
                                                     <item.icon className="h-4 w-4" />
                                                     {item.name}
                                                 </span>
-                                            )}
-                                        </li>
-                                    ))}
+                                                )}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                         ))}
