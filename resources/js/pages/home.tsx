@@ -1,19 +1,19 @@
 import {
     ArrowUpRight,
     Cloud,
-    FileArchive,
-    FileImage,
-    FileText,
     HardDrive,
     Server,
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { ActivityTable } from '@/components/activity-table';
+import type { Activity } from '@/components/activity-table';
+import type { PaginationState } from "@tanstack/react-table";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/AppLayout';
-
+ 
 const storageData = [
     {
         name: 'Drive',
@@ -61,39 +61,39 @@ const storageData = [
         barColor: 'bg-indigo-500',
     },
 ];
-
-const recentActivity = [
-    {
-        name: 'Marketing_Assets_2024.zip',
-        icon: FileArchive,
-        iconColor: 'text-amber-600',
-        action: 'Uploaded to',
-        target: 'Google Drive',
-        targetColor: 'text-blue-600',
-        time: '2 mins ago',
-    },
-    {
-        name: 'Design_Specs_v2.fig',
-        icon: FileImage,
-        iconColor: 'text-purple-600',
-        action: 'Moved from',
-        target: 'AWS',
-        targetColor: 'text-orange-600',
-        actionSuffix: ' to Dropbox',
-        time: '1 hour ago',
-    },
-    {
-        name: 'Client_Contract_Final.pdf',
-        icon: FileText,
-        iconColor: 'text-red-500',
-        action: 'Shared with',
-        target: 'sarah@company.com',
-        targetColor: 'text-blue-600',
-        time: '3 hours ago',
-    },
-];
-
+ 
 export default function Home() {
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [pageCount, setPageCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+ 
+    useEffect(() => {
+        let isMounted = true;
+        setLoading(true);
+        fetch(`/api/activities?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (!isMounted) {
+                    return;
+                }
+                setActivities(data.data || []);
+                setPageCount(data.last_page || 0);
+                setLoading(false);
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            });
+        return () => {
+            isMounted = false;
+        };
+    }, [pagination]);
+ 
     return (
         <AppLayout title="Dashboard">
             {/* Page Header */}
@@ -190,35 +190,19 @@ export default function Home() {
                         </Button>
                     </div>
                     <Card className="rounded-xl border-0 shadow-sm ring-1 ring-slate-100">
-                        <CardContent className="divide-y divide-slate-50 p-0">
-                            {recentActivity.map((activity, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-center gap-3.5 px-5 py-3.5"
-                                >
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50">
-                                        <activity.icon
-                                            className={`h-4 w-4 ${activity.iconColor}`}
-                                        />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-[13px] font-semibold text-slate-800">
-                                            {activity.name}
-                                        </div>
-                                        <div className="text-[11px] text-slate-400">
-                                            {activity.action}{' '}
-                                            <span
-                                                className={`font-medium ${activity.targetColor}`}
-                                            >
-                                                {activity.target}
-                                            </span>
-                                            {activity.actionSuffix}
-                                            {' • '}
-                                            {activity.time}
-                                        </div>
-                                    </div>
+                        <CardContent className="p-0">
+                            {loading ? (
+                                <div className="flex h-32 items-center justify-center text-[13px] text-slate-400">
+                                    Loading activities...
                                 </div>
-                            ))}
+                            ) : (
+                                <ActivityTable 
+                                    data={activities} 
+                                    pageCount={pageCount}
+                                    pagination={pagination}
+                                    onPaginationChange={setPagination}
+                                />
+                            )}
                         </CardContent>
                     </Card>
                 </div>

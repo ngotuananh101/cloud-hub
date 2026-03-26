@@ -1,9 +1,12 @@
 import { useForm, usePage } from '@inertiajs/react';
-import { Activity as ActivityIcon, Eye, EyeOff } from 'lucide-react';
+import type { PaginationState } from "@tanstack/react-table";
+import { Eye, EyeOff } from 'lucide-react';
 import type { FormEventHandler} from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
+import { ActivityTable } from '@/components/activity-table';
+import type { Activity } from '@/components/activity-table';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -14,39 +17,48 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/AppLayout';
-
-interface ActivityLog {
-    id: number;
-    description: string;
-    properties: {
-        ip?: string;
-        browser?: string;
-        platform?: string;
-        email?: string;
-    };
-    created_at: string;
-    created_at_human: string;
-}
-
-interface Props {
-    activities: ActivityLog[];
-    status?: string;
-}
-
-export default function AccountSettings({ activities }: Props) {
+ 
+export default function AccountSettings() {
     const { auth } = usePage().props as any;
     const user = auth.user;
+ 
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [pageCount, setPageCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+ 
+    useEffect(() => {
+        let isMounted = true;
 
+        setLoading(true);
+
+        fetch(`/api/activities?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (!isMounted) {
+                    return;
+                }
+
+                setActivities(data.data || []);
+                setPageCount(data.last_page || 0);
+                setLoading(false);
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            });
+            
+        return () => {
+            isMounted = false;
+        };
+    }, [pagination]);
+ 
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -397,82 +409,18 @@ export default function AccountSettings({ activities }: Props) {
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <Table>
-                                <TableHeader className="bg-slate-50/50 text-[11px]">
-                                    <TableRow>
-                                        <TableHead className="px-6 font-bold text-slate-500 uppercase">
-                                            Activity
-                                        </TableHead>
-                                        <TableHead className="font-bold text-slate-500 uppercase">
-                                            Device / IP
-                                        </TableHead>
-                                        <TableHead className="font-bold text-slate-500 uppercase">
-                                            Date / Time
-                                        </TableHead>
-                                        <TableHead className="pr-6 text-right font-bold text-slate-500 uppercase">
-                                            Status
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {activities.length > 0 ? (
-                                        activities.map((log) => (
-                                            <TableRow
-                                                key={log.id}
-                                                className="text-[13px]"
-                                            >
-                                                <TableCell className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-[#c12222]">
-                                                            <ActivityIcon className="h-4 w-4" />
-                                                        </div>
-                                                        <span className="font-semibold text-slate-700">
-                                                            {log.description}
-                                                        </span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="py-4">
-                                                    <div className="text-slate-600">
-                                                        {log.properties
-                                                            .browser ||
-                                                            'Unknown'}{' '}
-                                                        on{' '}
-                                                        {log.properties
-                                                            .platform ||
-                                                            'Unknown'}
-                                                    </div>
-                                                    <div className="text-[11px] text-slate-400">
-                                                        ({log.properties.ip ||
-                                                            'Unknown'})
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="py-4">
-                                                    <div className="text-slate-600">
-                                                        {log.created_at_human}
-                                                    </div>
-                                                    <div className="text-[11px] text-slate-400">
-                                                        {log.created_at}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="py-4 pr-6 text-right">
-                                                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                                                        Success
-                                                    </span>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={4}
-                                                className="py-12 text-center text-slate-400"
-                                            >
-                                                No activity recorded yet.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                            {loading ? (
+                                <div className="flex h-32 items-center justify-center text-[13px] text-slate-400">
+                                    Loading activities...
+                                </div>
+                            ) : (
+                                <ActivityTable 
+                                    data={activities} 
+                                    pageCount={pageCount}
+                                    pagination={pagination}
+                                    onPaginationChange={setPagination}
+                                />
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

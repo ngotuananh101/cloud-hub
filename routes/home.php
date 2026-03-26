@@ -11,4 +11,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/settings/account', [ProfileController::class, 'edit'])->name('settings.account');
     Route::patch('/settings/profile', [ProfileController::class, 'updateProfile'])->name('settings.profile');
     Route::put('/settings/password', [ProfileController::class, 'updatePassword'])->name('settings.password');
+ 
+    Route::get('/api/activities', [\App\Http\Controllers\ActivityController::class, 'index'])->name('api.activities');
 });
