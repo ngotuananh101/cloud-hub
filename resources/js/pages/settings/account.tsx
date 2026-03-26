@@ -1,10 +1,11 @@
 import { useForm, usePage } from '@inertiajs/react';
 import type { PaginationState } from "@tanstack/react-table";
 import { Eye, EyeOff } from 'lucide-react';
-import type { FormEventHandler} from 'react';
+import type { FormEventHandler } from 'react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
+ 
 import { ActivityTable } from '@/components/activity-table';
 import type { Activity } from '@/components/activity-table';
 import { Button } from '@/components/ui/button';
@@ -20,8 +21,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/AppLayout';
  
-export default function AccountSettings() {
-    const { auth } = usePage().props as any;
+export default function Account() {
+    const { auth } = usePage<any>().props;
     const user = auth.user;
  
     const [activities, setActivities] = useState<Activity[]>([]);
@@ -34,16 +35,14 @@ export default function AccountSettings() {
  
     useEffect(() => {
         let isMounted = true;
-
-        setLoading(true);
-
+ 
         fetch(`/api/activities?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
             .then((res) => res.json())
             .then((data) => {
                 if (!isMounted) {
                     return;
                 }
-
+ 
                 setActivities(data.data || []);
                 setPageCount(data.last_page || 0);
                 setLoading(false);
@@ -59,10 +58,15 @@ export default function AccountSettings() {
         };
     }, [pagination]);
  
+    const handlePaginationChange = (updater: any) => {
+        setLoading(true);
+        setPagination(updater);
+    };
+ 
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+ 
     // Profile Form
     const {
         data: profileData,
@@ -74,14 +78,14 @@ export default function AccountSettings() {
         name: user.name,
         email: user.email,
     });
-
+ 
     const updateProfile: FormEventHandler = (e) => {
         e.preventDefault();
         patchProfile(route('settings.profile'), {
             onSuccess: () => toast.success('Profile updated successfully'),
         });
     };
-
+ 
     // Password Form
     const {
         data: passwordData,
@@ -95,7 +99,7 @@ export default function AccountSettings() {
         password: '',
         password_confirmation: '',
     });
-
+ 
     const updatePassword: FormEventHandler = (e) => {
         e.preventDefault();
         putPassword(route('settings.password'), {
@@ -105,7 +109,7 @@ export default function AccountSettings() {
             },
         });
     };
-
+ 
     return (
         <AppLayout title="Account Settings">
             <div className="mb-6">
@@ -117,34 +121,34 @@ export default function AccountSettings() {
                     all cloud providers.
                 </p>
             </div>
-
+ 
             <Tabs defaultValue="profile" className="w-full">
                 <div className="mb-3 border-b border-slate-200">
                     <TabsList
-                    variant="line"
-                    className="justify-start gap-10"
-                >
-                    <TabsTrigger
-                        value="profile"
-                        className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
+                        variant="line"
+                        className="justify-start gap-10"
                     >
-                        Profile
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="security"
-                        className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
-                    >
-                        Security
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="activity"
-                        className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
-                    >
-                        Activity
-                    </TabsTrigger>
-                </TabsList>
+                        <TabsTrigger
+                            value="profile"
+                            className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
+                        >
+                            Profile
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="security"
+                            className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
+                        >
+                            Security
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="activity"
+                            className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
+                        >
+                            Activity
+                        </TabsTrigger>
+                    </TabsList>
                 </div>
-
+ 
                 {/* Profile Tab */}
                 <TabsContent value="profile" className="mt-0 outline-none">
                     <Card className="border-0 shadow-sm ring-1 ring-slate-100">
@@ -220,7 +224,7 @@ export default function AccountSettings() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-
+ 
                 {/* Security Tab */}
                 <TabsContent value="security" className="mt-0 outline-none">
                     <Card className="border-0 shadow-sm ring-1 ring-slate-100">
@@ -393,7 +397,7 @@ export default function AccountSettings() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-
+ 
                 {/* Activity Tab */}
                 <TabsContent value="activity" className="mt-0 outline-none">
                     <Card className="border-0 shadow-sm ring-1 ring-slate-100">
@@ -418,7 +422,7 @@ export default function AccountSettings() {
                                     data={activities} 
                                     pageCount={pageCount}
                                     pagination={pagination}
-                                    onPaginationChange={setPagination}
+                                    onPaginationChange={handlePaginationChange}
                                 />
                             )}
                         </CardContent>

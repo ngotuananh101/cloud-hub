@@ -1,10 +1,11 @@
+import type { Table } from "@tanstack/react-table";
 import {
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
 } from "lucide-react";
-import type { Table } from "@tanstack/react-table";
+import React from "react";
  
 import { Button } from "@/components/ui/button";
  
@@ -16,14 +17,8 @@ export function DataTablePagination<TData>({
     table,
 }: DataTablePaginationProps<TData>) {
     return (
-        <div className="flex items-center justify-between px-2">
-            <div className="flex-1 text-sm text-muted-foreground">
-                {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                {table.getFilteredRowModel().rows.length} row(s) selected.
-            </div>
-            <div className="flex items-center space-x-6 lg:space-x-8">
+        <div className="grow flex items-center justify-between space-x-6 lg:space-x-8 px-4">
                 <div className="flex items-center space-x-2">
-                    <p className="text-sm font-medium">Rows per page</p>
                     <select
                         className="h-8 w-[70px] rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         value={`${table.getState().pagination.pageSize}`}
@@ -81,6 +76,5 @@ export function DataTablePagination<TData>({
                     </Button>
                 </div>
             </div>
-        </div>
     );
 }

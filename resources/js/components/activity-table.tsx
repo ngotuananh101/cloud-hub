@@ -1,5 +1,3 @@
-"use client";
- 
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { format, isToday, isYesterday } from "date-fns";
 import { 
@@ -9,6 +7,7 @@ import {
     ShieldCheck 
 } from "lucide-react";
 import React from "react";
+ 
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
  

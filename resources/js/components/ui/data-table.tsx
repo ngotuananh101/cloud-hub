@@ -7,7 +7,9 @@ import {
     PaginationState,
     OnChangeFn,
 } from "@tanstack/react-table";
+import React from "react";
  
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
     Table,
     TableBody,
@@ -16,7 +18,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { DataTablePagination } from "@/components/ui/data-table-pagination";
  
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
