@@ -31,6 +31,7 @@ interface AuthUser {
 
 const sidebarNav = [
     {
+        label: '',
         items: [
             {
                 name: 'Dashboard',
@@ -51,7 +52,9 @@ const sidebarNav = [
     },
     {
         label: 'SYSTEM',
-        items: [{ name: 'Settings', icon: Settings, route: 'settings.account' }],
+        items: [
+            { name: 'Settings', icon: Settings, route: 'settings.account' },
+        ],
     },
 ];
 
@@ -89,15 +92,19 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
 
                     {/* Navigation */}
                     <nav className="flex-1 overflow-y-auto px-3 py-4">
-                        {sidebarNav.map((group) => (
-                            <div key={group.label} className="mb-5">
-                                <div className="mb-2 px-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                                    {group.label}
-                                </div>
+                        {sidebarNav.map((group, index) => (
+                            <div key={group.label || index} className="mb-5">
+                                {group.label && (
+                                    <div className="mb-2 px-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                        {group.label}
+                                    </div>
+                                )}
                                 <ul className="space-y-0.5">
                                     {group.items.map((item) => {
-                                        const isActive = item.route ? route().current(item.route + '*') : false;
-                                        
+                                        const isActive = item.route
+                                            ? route().current(item.route + '*')
+                                            : false;
+
                                         return (
                                             <li key={item.name}>
                                                 {item.route ? (
@@ -113,14 +120,16 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                                         {item.name}
                                                     </Link>
                                                 ) : (
-                                                <span className={`flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium ${
-                                                    isActive
-                                                        ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                        : 'text-slate-400'
-                                                }`}>
-                                                    <item.icon className="h-4 w-4" />
-                                                    {item.name}
-                                                </span>
+                                                    <span
+                                                        className={`flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium ${
+                                                            isActive
+                                                                ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                : 'text-slate-400'
+                                                        }`}
+                                                    >
+                                                        <item.icon className="h-4 w-4" />
+                                                        {item.name}
+                                                    </span>
                                                 )}
                                             </li>
                                         );
