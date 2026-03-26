@@ -48,7 +48,7 @@ export function DataTable<TData, TValue>({
     });
  
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 px-4">
             <div className="w-full">
                 <Table>
                     <TableHeader>
