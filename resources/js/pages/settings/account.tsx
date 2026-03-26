@@ -1,13 +1,11 @@
 import { useForm, usePage } from '@inertiajs/react';
-import type { PaginationState } from "@tanstack/react-table";
 import { Eye, EyeOff } from 'lucide-react';
 import type { FormEventHandler } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
  
 import { ActivityTable } from '@/components/activity-table';
-import type { Activity } from '@/components/activity-table';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -24,44 +22,6 @@ import AppLayout from '@/layouts/AppLayout';
 export default function Account() {
     const { auth } = usePage<any>().props;
     const user = auth.user;
- 
-    const [activities, setActivities] = useState<Activity[]>([]);
-    const [pageCount, setPageCount] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [pagination, setPagination] = useState<PaginationState>({
-        pageIndex: 0,
-        pageSize: 10,
-    });
- 
-    useEffect(() => {
-        let isMounted = true;
- 
-        fetch(`/api/activities?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
-            .then((res) => res.json())
-            .then((data) => {
-                if (!isMounted) {
-                    return;
-                }
- 
-                setActivities(data.data || []);
-                setPageCount(data.last_page || 0);
-                setLoading(false);
-            })
-            .catch(() => {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            });
-            
-        return () => {
-            isMounted = false;
-        };
-    }, [pagination]);
- 
-    const handlePaginationChange = (updater: any) => {
-        setLoading(true);
-        setPagination(updater);
-    };
  
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -413,18 +373,7 @@ export default function Account() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            {loading ? (
-                                <div className="flex h-32 items-center justify-center text-[13px] text-slate-400">
-                                    Loading activities...
-                                </div>
-                            ) : (
-                                <ActivityTable 
-                                    data={activities} 
-                                    pageCount={pageCount}
-                                    pagination={pagination}
-                                    onPaginationChange={handlePaginationChange}
-                                />
-                            )}
+                            <ActivityTable />
                         </CardContent>
                     </Card>
                 </TabsContent>

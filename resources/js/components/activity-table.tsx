@@ -1,3 +1,5 @@
+"use client";
+ 
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { format, isToday, isYesterday } from "date-fns";
 import { 
@@ -6,7 +8,7 @@ import {
     RefreshCw, 
     ShieldCheck 
 } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
  
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
@@ -117,21 +119,60 @@ export const columns: ColumnDef<Activity>[] = [
     },
 ];
  
-interface ActivityTableProps {
-    data: Activity[];
-    pageCount: number;
-    pagination: PaginationState;
-    onPaginationChange: React.Dispatch<React.SetStateAction<PaginationState>>;
-}
+export function ActivityTable() {
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [pageCount, setPageCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
  
-export function ActivityTable({ data, pageCount, pagination, onPaginationChange }: ActivityTableProps) {
+    useEffect(() => {
+        let isMounted = true;
+ 
+        fetch(`/api/activities?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (!isMounted) {
+                    return;
+                }
+ 
+                setActivities(data.data || []);
+                setPageCount(data.last_page || 0);
+                setLoading(false);
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            });
+ 
+        return () => {
+            isMounted = false;
+        };
+    }, [pagination.pageIndex, pagination.pageSize]);
+ 
+    const handlePaginationChange = (updater: any) => {
+        setLoading(true);
+        setPagination(updater);
+    };
+ 
+    if (loading && activities.length === 0) {
+        return (
+            <div className="flex h-32 items-center justify-center text-[13px] text-slate-400">
+                Loading activities...
+            </div>
+        );
+    }
+ 
     return (
         <DataTable 
             columns={columns} 
-            data={data} 
+            data={activities} 
             pageCount={pageCount}
             pagination={pagination}
-            onPaginationChange={onPaginationChange}
+            onPaginationChange={handlePaginationChange}
         />
     );
 }
