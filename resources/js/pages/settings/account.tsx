@@ -107,30 +107,35 @@ export default function AccountSettings({ activities }: Props) {
             </div>
 
             <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="mb-6 h-auto bg-transparent p-0">
+                <div className="mb-3 border-b border-slate-200">
+                    <TabsList
+                    variant="line"
+                    className="justify-start gap-10"
+                >
                     <TabsTrigger
                         value="profile"
-                        className="rounded-none border-b-2 border-transparent px-6 py-2 text-[13px] font-medium text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-[#c12222] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#c12222]"
+                        className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
                     >
                         Profile
                     </TabsTrigger>
                     <TabsTrigger
                         value="security"
-                        className="rounded-none border-b-2 border-transparent px-6 py-2 text-[13px] font-medium text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-[#c12222] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#c12222]"
+                        className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
                     >
                         Security
                     </TabsTrigger>
                     <TabsTrigger
                         value="activity"
-                        className="rounded-none border-b-2 border-transparent px-6 py-2 text-[13px] font-medium text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-[#c12222] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#c12222]"
+                        className="px-0 pb-3 text-[13px] font-medium transition-all data-active:font-bold data-active:text-[#c12222] data-active:after:bg-[#c12222]"
                     >
                         Activity
                     </TabsTrigger>
                 </TabsList>
+                </div>
 
                 {/* Profile Tab */}
                 <TabsContent value="profile" className="mt-0 outline-none">
-                    <Card className="max-w-2xl border-0 shadow-sm ring-1 ring-slate-100">
+                    <Card className="border-0 shadow-sm ring-1 ring-slate-100">
                         <CardHeader>
                             <CardTitle className="text-[16px] font-bold text-slate-900">
                                 Profile Information
@@ -206,7 +211,7 @@ export default function AccountSettings({ activities }: Props) {
 
                 {/* Security Tab */}
                 <TabsContent value="security" className="mt-0 outline-none">
-                    <Card className="max-w-2xl border-0 shadow-sm ring-1 ring-slate-100">
+                    <Card className="border-0 shadow-sm ring-1 ring-slate-100">
                         <CardHeader>
                             <CardTitle className="text-[16px] font-bold text-slate-900">
                                 Password & Security
