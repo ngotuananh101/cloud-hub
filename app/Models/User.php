@@ -47,4 +47,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function cloudConnections()
+    {
+        return $this->hasMany(CloudConnection::class);
+    }
 }

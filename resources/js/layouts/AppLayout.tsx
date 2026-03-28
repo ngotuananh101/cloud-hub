@@ -3,15 +3,13 @@ import {
     Bell,
     CirclePlus,
     Cloud,
-    HardDrive,
     HelpCircle,
     LayoutDashboard,
     LogOut,
-    Server,
     Settings,
     Upload,
 } from 'lucide-react';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { route } from 'ziggy-js';
 import ConnectCloudModal from '@/components/ConnectCloudModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,43 +28,59 @@ interface AuthUser {
     avatar: string;
 }
 
-const sidebarNav = [
-    {
-        label: '',
-        items: [
-            {
-                name: 'Dashboard',
-                icon: LayoutDashboard,
-                route: 'home',
-            },
-        ],
-    },
-    {
-        label: 'CONNECTED STORAGE',
-        items: [
-            { name: 'Google Drive', icon: HardDrive, route: null },
-            { name: 'OneDrive', icon: Cloud, route: null },
-            { name: 'Dropbox', icon: HardDrive, route: null },
-            { name: 'AWS S3', icon: Server, route: null },
-            { name: 'FTP Server', icon: Server, route: null },
-        ],
-    },
-    {
-        label: 'SYSTEM',
-        items: [
-            { name: 'Settings', icon: Settings, route: 'settings.account' },
-        ],
-    },
-];
+interface Provider {
+    id: string;
+    name: string;
+    icon: string;
+    icon_url: string;
+}
+
+interface CloudConnection {
+    id: number;
+    provider_id: string;
+    name: string;
+    provider: Provider;
+}
 
 export default function AppLayout({ title, children }: AppLayoutProps) {
-    const { auth } = usePage<{ auth: { user: AuthUser } }>().props;
+    const { auth, cloudConnections } = usePage<{
+        auth: { user: AuthUser };
+        cloudConnections: CloudConnection[];
+    }>().props;
+
     const user = auth.user;
     const [isConnectModalOpen, setIsConnectModalOpen] = React.useState(false);
 
+    const sidebarNav = [
+        {
+            label: '',
+            items: [
+                {
+                    name: 'Dashboard',
+                    icon: LayoutDashboard,
+                    route: 'home',
+                },
+            ],
+        },
+        {
+            label: 'CONNECTED STORAGE',
+            items: cloudConnections.map((conn) => ({
+                name: conn.name,
+                icon_url: conn.provider.icon_url,
+                route: null,
+            })),
+        },
+        {
+            label: 'SYSTEM',
+            items: [
+                { name: 'Settings', icon: Settings, route: 'settings.account' },
+            ],
+        },
+    ];
+
     const initials = user.name
         .split(' ')
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2);
@@ -102,40 +116,72 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                     </div>
                                 )}
                                 <ul className="space-y-0.5">
-                                    {group.items.map((item) => {
-                                        const isActive = item.route
-                                            ? route().current(item.route + '*')
-                                            : false;
+                                    {group.items.length > 0 ? (
+                                        group.items.map((item: any) => {
+                                            const isActive = item.route
+                                                ? route().current(
+                                                      item.route + '*',
+                                                  )
+                                                : false;
 
-                                        return (
-                                            <li key={item.name}>
-                                                {item.route ? (
-                                                    <Link
-                                                        href={route(item.route)}
-                                                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
-                                                            isActive
-                                                                ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                                        }`}
-                                                    >
-                                                        <item.icon className="h-4 w-4" />
-                                                        {item.name}
-                                                    </Link>
-                                                ) : (
-                                                    <span
-                                                        className={`flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium ${
-                                                            isActive
-                                                                ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                                : 'text-slate-400'
-                                                        }`}
-                                                    >
-                                                        <item.icon className="h-4 w-4" />
-                                                        {item.name}
-                                                    </span>
-                                                )}
-                                            </li>
-                                        );
-                                    })}
+                                            return (
+                                                <li key={item.name}>
+                                                    {item.route ? (
+                                                        <Link
+                                                            href={route(
+                                                                item.route,
+                                                            )}
+                                                            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                                                isActive
+                                                                    ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                                            }`}
+                                                        >
+                                                            {item.icon ? (
+                                                                <item.icon className="h-4 w-4" />
+                                                            ) : (
+                                                                <img
+                                                                    src={
+                                                                        (
+                                                                            item as any
+                                                                        ).icon_url
+                                                                    }
+                                                                    className="h-4 w-4 rounded-sm"
+                                                                />
+                                                            )}
+                                                            {item.name}
+                                                        </Link>
+                                                    ) : (
+                                                        <span
+                                                            className={`flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium ${
+                                                                isActive
+                                                                    ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                    : 'text-slate-400'
+                                                            }`}
+                                                        >
+                                                            {item.icon ? (
+                                                                <item.icon className="h-4 w-4" />
+                                                            ) : (
+                                                                <img
+                                                                    src={
+                                                                        (
+                                                                            item as any
+                                                                        ).icon_url
+                                                                    }
+                                                                    className="h-4 w-4 rounded-sm"
+                                                                />
+                                                            )}
+                                                            {item.name}
+                                                        </span>
+                                                    )}
+                                                </li>
+                                            );
+                                        })
+                                    ) : group.label === 'CONNECTED STORAGE' ? (
+                                        <li className="px-3 py-2 text-[11px] italic text-slate-400">
+                                            No accounts connected
+                                        </li>
+                                    ) : null}
                                 </ul>
                             </div>
                         ))}

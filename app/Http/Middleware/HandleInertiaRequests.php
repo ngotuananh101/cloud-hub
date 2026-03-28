@@ -48,6 +48,9 @@ class HandleInertiaRequests extends Middleware
                 'status' => fn () => $request->session()->get('status'),
             ],
             'providers' => \App\Models\Provider::where('is_active', true)->get(),
+            'cloudConnections' => $request->user()
+                ? $request->user()->cloudConnections()->with('provider')->get()
+                : [],
         ];
     }
 }
