@@ -13,7 +13,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Provider {
     id: string;
@@ -94,25 +93,28 @@ export default function ConnectCloudModal({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-[550px] overflow-hidden p-0 sm:rounded-[20px]">
-                <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-6 py-4">
+            <DialogContent className="flex max-h-[80vh] min-w-[550px] flex-col overflow-hidden p-0 sm:max-w-[50vw] sm:rounded-[20px]">
+                <DialogHeader className="flex shrink-0 flex-row items-center justify-between border-b border-slate-100 px-6 py-4">
                     <DialogTitle className="text-[16px] font-bold text-slate-800">
                         Connect New Storage
                     </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="flex flex-col">
-                    <div className="p-6">
+                <form
+                    onSubmit={handleSubmit}
+                    className="flex flex-1 flex-col overflow-hidden"
+                >
+                    <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
                         {/* Provider Selection */}
                         <div className="mb-6">
                             <Label className="mb-3 block text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                                 Select Provider
                             </Label>
-                            <ScrollArea className="w-full">
+                            <div className="custom-scrollbar w-full overflow-x-auto pb-4">
                                 <RadioGroup
                                     value={data.provider_id}
                                     onValueChange={handleProviderChange}
-                                    className="flex gap-3 pb-2"
+                                    className="flex w-max gap-3"
                                 >
                                     {providers.map((provider) => (
                                         <div key={provider.id}>
@@ -137,7 +139,7 @@ export default function ConnectCloudModal({
                                         </div>
                                     ))}
                                 </RadioGroup>
-                            </ScrollArea>
+                            </div>
                             {errors.provider_id && (
                                 <p className="mt-1 text-[11px] text-red-500">
                                     {errors.provider_id}
@@ -253,7 +255,7 @@ export default function ConnectCloudModal({
                         )}
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4">
+                    <div className="flex shrink-0 items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/5 px-6 py-4">
                         <Button
                             type="button"
                             variant="ghost"
