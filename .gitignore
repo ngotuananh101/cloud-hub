@@ -26,3 +26,5 @@ yarn-error.log
 /.vscode
 /.zed
 /.agent
+/microservice/telegram/__pycache__
+/microservice/telegram/storage

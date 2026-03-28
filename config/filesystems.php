@@ -60,6 +60,10 @@ return [
             'report' => false,
         ],
 
+        'telegram' => [
+            'driver' => 'telegram',
+            'token' => env('TELEGRAM_BOT_TOKEN'),
+        ],
     ],
 
     /*
