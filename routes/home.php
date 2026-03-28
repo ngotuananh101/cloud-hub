@@ -13,4 +13,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/settings/password', [ProfileController::class, 'updatePassword'])->name('settings.password');
  
     Route::get('/api/activities', [\App\Http\Controllers\ActivityController::class, 'index'])->name('api.activities');
+
+    Route::post('/cloud-connections', [\App\Http\Controllers\CloudConnectionController::class, 'store'])->name('cloud-connections.store');
+    Route::delete('/cloud-connections/{cloudConnection}', [\App\Http\Controllers\CloudConnectionController::class, 'destroy'])->name('cloud-connections.destroy');
 });

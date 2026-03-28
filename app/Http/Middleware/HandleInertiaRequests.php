@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
                 'status' => fn () => $request->session()->get('status'),
             ],
+            'providers' => \App\Models\Provider::where('is_active', true)->get(),
         ];
     }
 }

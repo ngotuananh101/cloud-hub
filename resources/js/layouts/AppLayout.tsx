@@ -11,8 +11,9 @@ import {
     Settings,
     Upload,
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { route } from 'ziggy-js';
+import ConnectCloudModal from '@/components/ConnectCloudModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +62,7 @@ const sidebarNav = [
 export default function AppLayout({ title, children }: AppLayoutProps) {
     const { auth } = usePage<{ auth: { user: AuthUser } }>().props;
     const user = auth.user;
+    const [isConnectModalOpen, setIsConnectModalOpen] = React.useState(false);
 
     const initials = user.name
         .split(' ')
@@ -141,7 +143,10 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
 
                     {/* Add New Cloud */}
                     <div className="px-3 pb-3">
-                        <Button className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c12222] py-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[#a31c1c]">
+                        <Button
+                            onClick={() => setIsConnectModalOpen(true)}
+                            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c12222] py-5 text-[13px] font-semibold text-white shadow-sm hover:bg-[#a31c1c]"
+                        >
                             <CirclePlus className="h-4 w-4" />
                             Add New Cloud
                         </Button>
@@ -208,12 +213,16 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                         </div>
                     </header>
 
-                    {/* Page Content */}
                     <main className="flex-1 overflow-y-auto p-6">
                         {children}
                     </main>
                 </div>
             </div>
+
+            <ConnectCloudModal
+                open={isConnectModalOpen}
+                onOpenChange={setIsConnectModalOpen}
+            />
         </>
     );
 }
