@@ -104,49 +104,50 @@ export default function ConnectCloudModal({
                     onSubmit={handleSubmit}
                     className="flex flex-1 flex-col overflow-hidden"
                 >
-                    <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-                        {/* Provider Selection */}
-                        <div className="mb-6">
-                            <Label className="mb-3 block text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                                Select Provider
-                            </Label>
-                            <div className="custom-scrollbar w-full overflow-x-auto pb-4">
-                                <RadioGroup
-                                    value={data.provider_id}
-                                    onValueChange={handleProviderChange}
-                                    className="flex w-max gap-3"
-                                >
-                                    {providers.map((provider) => (
-                                        <div key={provider.id}>
-                                            <RadioGroupItem
-                                                value={provider.id}
-                                                id={provider.id}
-                                                className="peer sr-only"
+                    {/* Provider Selection (Fixed at top) */}
+                    <div className="shrink-0 border-b border-slate-50 px-6 pt-0 pb-4">
+                        <Label className="mb-3 block text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                            Select Provider
+                        </Label>
+                        <div className="custom-scrollbar w-full overflow-x-auto pb-2">
+                            <RadioGroup
+                                value={data.provider_id}
+                                onValueChange={handleProviderChange}
+                                className="flex w-max gap-3"
+                            >
+                                {providers.map((provider) => (
+                                    <div key={provider.id}>
+                                        <RadioGroupItem
+                                            value={provider.id}
+                                            id={provider.id}
+                                            className="peer sr-only"
+                                        />
+                                        <label
+                                            htmlFor={provider.id}
+                                            className="flex h-[90px] w-[90px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-white transition-all peer-data-[state=checked]:border-[#c12222] peer-data-[state=checked]:bg-[#c12222]/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-[#c12222] hover:bg-slate-50"
+                                        >
+                                            <img
+                                                src={provider.icon_url}
+                                                alt={provider.name}
+                                                className="h-8 w-8"
                                             />
-                                            <label
-                                                htmlFor={provider.id}
-                                                className="flex h-[90px] w-[90px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-white transition-all peer-data-[state=checked]:border-[#c12222] peer-data-[state=checked]:bg-[#c12222]/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-[#c12222] hover:bg-slate-50"
-                                            >
-                                                <img
-                                                    src={provider.icon_url}
-                                                    alt={provider.name}
-                                                    className="h-8 w-8"
-                                                />
-                                                <span className="text-[10px] font-bold text-slate-600 peer-data-[state=checked]:text-[#c12222]">
-                                                    {provider.name}
-                                                </span>
-                                            </label>
-                                        </div>
-                                    ))}
-                                </RadioGroup>
-                            </div>
-                            {errors.provider_id && (
-                                <p className="mt-1 text-[11px] text-red-500">
-                                    {errors.provider_id}
-                                </p>
-                            )}
+                                            <span className="text-[10px] font-bold text-slate-600 peer-data-[state=checked]:text-[#c12222]">
+                                                {provider.name}
+                                            </span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
                         </div>
+                        {errors.provider_id && (
+                            <p className="mt-1 text-[11px] text-red-500">
+                                {errors.provider_id}
+                            </p>
+                        )}
+                    </div>
 
+                    {/* Scrollable Content (Dynamic fields) */}
+                    <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
                         {selectedProvider && (
                             <div className="space-y-4">
                                 <div className="space-y-1.5">

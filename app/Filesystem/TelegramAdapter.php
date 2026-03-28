@@ -7,23 +7,27 @@ use League\Flysystem\Config;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\PathPrefixer;
-use League\Flysystem\StorageAttributes;
-use League\Flysystem\UnableToReadFile;
-use League\Flysystem\UnableToWriteFile;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToListContents;
+use League\Flysystem\UnableToMoveFile;
+use League\Flysystem\UnableToReadFile;
+use League\Flysystem\UnableToWriteFile;
 
 class TelegramAdapter implements FilesystemAdapter
 {
     protected Client $client;
+
     protected string $sessionId;
+
     protected string $baseUrl;
+
     protected string $token;
+
     protected PathPrefixer $prefixer;
 
     public function __construct(string $sessionId, string $token, string $prefix = '')
     {
-        $this->baseUrl = rtrim(config('filesystems.disks.telegram.base_url'), '/');
+        $this->baseUrl = rtrim(config('cloud-hub.providers.telegram.base_url'), '/');
         $this->token = $token;
         $this->sessionId = $sessionId;
         $this->client = new Client([
@@ -40,6 +44,7 @@ class TelegramAdapter implements FilesystemAdapter
     {
         try {
             $this->client->get('/metadata', ['query' => ['path' => $this->prefixer->prefixPath($path)]]);
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -49,10 +54,11 @@ class TelegramAdapter implements FilesystemAdapter
     public function directoryExists(string $path): bool
     {
         // Check if any file has this path as a prefix
-        $pattern = rtrim($this->prefixer->prefixPath($path), '/') . '/';
+        $pattern = rtrim($this->prefixer->prefixPath($path), '/').'/';
         try {
             $response = $this->client->get('/list', ['query' => ['directory' => $pattern]]);
             $files = json_decode($response->getBody()->getContents(), true);
+
             return count($files) > 0;
         } catch (\Exception $e) {
             return false;
@@ -66,7 +72,7 @@ class TelegramAdapter implements FilesystemAdapter
                 'query' => ['path' => $this->prefixer->prefixPath($path)],
                 'multipart' => [
                     [
-                        'name'     => 'file',
+                        'name' => 'file',
                         'contents' => $contents,
                         'filename' => basename($path),
                     ],
@@ -86,6 +92,7 @@ class TelegramAdapter implements FilesystemAdapter
     {
         try {
             $response = $this->client->get('/read', ['query' => ['path' => $this->prefixer->prefixPath($path)]]);
+
             return $response->getBody()->getContents();
         } catch (\Exception $e) {
             throw UnableToReadFile::fromLocation($path, $e->getMessage());
@@ -97,8 +104,9 @@ class TelegramAdapter implements FilesystemAdapter
         try {
             $response = $this->client->get('/read', [
                 'query' => ['path' => $this->prefixer->prefixPath($path)],
-                'stream' => true
+                'stream' => true,
             ]);
+
             return $response->getBody()->detach();
         } catch (\Exception $e) {
             throw UnableToReadFile::fromLocation($path, $e->getMessage());
@@ -176,7 +184,7 @@ class TelegramAdapter implements FilesystemAdapter
             $this->copy($source, $destination, $config);
             $this->delete($source);
         } catch (\Exception $e) {
-            throw \League\Flysystem\UnableToMoveFile::fromLocationTo($source, $destination, $e);
+            throw UnableToMoveFile::fromLocationTo($source, $destination, $e);
         }
     }
 

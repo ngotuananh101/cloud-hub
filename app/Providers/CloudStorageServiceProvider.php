@@ -249,7 +249,7 @@ class CloudStorageServiceProvider extends ServiceProvider
         Storage::extend('telegram', function ($app, $config) {
             $adapter = new TelegramAdapter(
                 $config['session_id'],
-                config('filesystems.disks.telegram.token'),
+                config('cloud-hub.providers.telegram.token'),
                 $config['prefix'] ?? ''
             );
 
