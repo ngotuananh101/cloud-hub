@@ -77,6 +77,20 @@ export default function ConnectCloudModal({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check if selected provider is an OAuth provider (handled by redirect flow)
+        const oauthProviders = ['google', 'onedrive', 'dropbox'];
+
+        if (selectedProvider && oauthProviders.includes(selectedProvider.id)) {
+            // Redirect to OAuth authorization page with the connection name
+            window.location.href = route('oauth.redirect', {
+                provider: selectedProvider.id,
+                name: data.name,
+            });
+
+            return;
+        }
+
         post(route('cloud-connections.store'), {
             onSuccess: () => {
                 onOpenChange(false);

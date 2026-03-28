@@ -70,7 +70,7 @@ class CloudStorageServiceProvider extends ServiceProvider
 
         Storage::extend('dropbox', function ($app, $config) {
             $client = new \Spatie\Dropbox\Client(
-                $config['authorization_token'] ?? ''
+                $config['access_token'] ?? ''
             );
             $adapter = new DropboxAdapter($client);
 

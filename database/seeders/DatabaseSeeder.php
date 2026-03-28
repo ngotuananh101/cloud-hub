@@ -20,5 +20,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'ngotuananh2101@gmail.com',
             'password' => '123@123a',
         ]);
+
+        $this->call([
+            ProviderSeeder::class,
+        ]);
     }
 }

@@ -18,12 +18,7 @@ class ProviderSeeder extends Seeder
                 'name' => 'Google Drive',
                 'icon' => 'google-drive',
                 'driver' => 'google',
-                'config_schema' => [
-                    'client_id' => 'string',
-                    'client_secret' => 'string',
-                    'refresh_token' => 'string',
-                    'folder_id' => 'string',
-                ],
+                'config_schema' => [],
                 'is_active' => true,
             ],
             [
@@ -31,12 +26,7 @@ class ProviderSeeder extends Seeder
                 'name' => 'OneDrive',
                 'icon' => 'onedrive',
                 'driver' => 'onedrive',
-                'config_schema' => [
-                    'client_id' => 'string',
-                    'client_secret' => 'string',
-                    'refresh_token' => 'string',
-                    'folder_id' => 'string',
-                ],
+                'config_schema' => [],
                 'is_active' => true,
             ],
             [
@@ -44,9 +34,7 @@ class ProviderSeeder extends Seeder
                 'name' => 'Dropbox',
                 'icon' => 'dropbox',
                 'driver' => 'dropbox',
-                'config_schema' => [
-                    'authorization_token' => 'string',
-                ],
+                'config_schema' => [],
                 'is_active' => true,
             ],
             [

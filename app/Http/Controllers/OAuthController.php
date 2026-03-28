@@ -173,7 +173,7 @@ class OAuthController extends Controller
             'provider_id' => $provider->id,
             'name' => $connectionName,
             'credentials' => [
-                'authorization_token' => $accessToken,
+                'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
                 'expires_at' => isset($data['expires_in']) ? now()->addSeconds($data['expires_in'])->timestamp : null,
             ],
@@ -248,7 +248,7 @@ class OAuthController extends Controller
             'provider_id' => $provider->id,
             'name' => $connectionName,
             'credentials' => [
-                'authorization_token' => $accessToken,
+                'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
                 'expires_at' => isset($data['expires_in']) ? now()->addSeconds($data['expires_in'])->timestamp : null,
             ],
