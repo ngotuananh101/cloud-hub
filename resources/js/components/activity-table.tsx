@@ -191,14 +191,6 @@ export function ActivityTable() {
         );
     };
 
-    if (loading && activities.length === 0) {
-        return (
-            <div className="flex h-32 items-center justify-center text-[13px] text-slate-400">
-                Loading activities...
-            </div>
-        );
-    }
-
     return (
         <DataTable
             columns={columns}
@@ -207,6 +199,7 @@ export function ActivityTable() {
             currentPage={currentPage}
             pagination={pagination}
             onPaginationChange={handlePaginationChange}
+            isLoading={loading}
         />
     );
 }

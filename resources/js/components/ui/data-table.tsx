@@ -17,6 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -25,6 +26,7 @@ interface DataTableProps<TData, TValue> {
     currentPage?: number;
     pagination?: PaginationState;
     onPaginationChange?: OnChangeFn<PaginationState>;
+    isLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -34,6 +36,7 @@ export function DataTable<TData, TValue>({
     currentPage,
     pagination,
     onPaginationChange,
+    isLoading,
 }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
@@ -71,7 +74,17 @@ export function DataTable<TData, TValue>({
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
+                        {isLoading ? (
+                            Array.from({ length: pagination?.pageSize ?? 6 }).map((_, i) => (
+                                <TableRow key={`skeleton-${i}`}>
+                                    {columns.map((_, j) => (
+                                        <TableCell key={`skeleton-cell-${j}`}>
+                                            <Skeleton className="h-6 w-full" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
