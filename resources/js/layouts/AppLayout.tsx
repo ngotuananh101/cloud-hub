@@ -9,7 +9,7 @@ import {
     Settings,
     Upload,
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { route } from 'ziggy-js';
 import ConnectCloudModal from '@/components/ConnectCloudModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -50,6 +50,16 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
 
     const user = auth.user;
     const [isConnectModalOpen, setIsConnectModalOpen] = React.useState(false);
+
+    useEffect(() => {
+        const handleOpenModal = () => setIsConnectModalOpen(true);
+        window.addEventListener('open-connect-cloud-modal', handleOpenModal);
+        return () =>
+            window.removeEventListener(
+                'open-connect-cloud-modal',
+                handleOpenModal,
+            );
+    }, []);
 
     const sidebarNav = [
         {

@@ -1,4 +1,5 @@
-import { 
+import { usePage } from '@inertiajs/react';
+import {
     ArrowUpRight,
     Cloud,
     HardDrive,
@@ -62,6 +63,12 @@ const storageData = [
 ];
  
 export default function Home() {
+    const { providers } = usePage<{ providers: any[] }>().props;
+
+    const openConnectModal = () => {
+        window.dispatchEvent(new CustomEvent('open-connect-cloud-modal'));
+    };
+
     return (
         <AppLayout title="Dashboard">
             {/* Page Header */}
@@ -179,32 +186,28 @@ export default function Home() {
                         </CardHeader>
                         <CardContent className="pb-5">
                             <div className="mb-4 flex justify-center gap-5">
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                                        <HardDrive className="h-4 w-4 text-blue-500" />
+                                {providers.slice(0, 3).map((provider) => (
+                                    <div
+                                        key={provider.id}
+                                        className="flex flex-col items-center gap-1"
+                                    >
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50">
+                                            <img
+                                                src={provider.icon_url}
+                                                alt={provider.name}
+                                                className="h-5 w-5"
+                                            />
+                                        </div>
+                                        <span className="text-[9px] font-semibold tracking-wide text-slate-400 uppercase">
+                                            {provider.name.split(' ')[0]}
+                                        </span>
                                     </div>
-                                    <span className="text-[9px] font-semibold tracking-wide text-slate-400 uppercase">
-                                        Drive
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-50">
-                                        <Cloud className="h-4 w-4 text-sky-500" />
-                                    </div>
-                                    <span className="text-[9px] font-semibold tracking-wide text-slate-400 uppercase">
-                                        Azure
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-                                        <Server className="h-4 w-4 text-orange-500" />
-                                    </div>
-                                    <span className="text-[9px] font-semibold tracking-wide text-slate-400 uppercase">
-                                        AWS
-                                    </span>
-                                </div>
+                                ))}
                             </div>
-                            <Button className="w-full rounded-lg bg-slate-900 py-2.5 text-[12px] font-semibold text-white hover:bg-slate-800">
+                            <Button
+                                onClick={openConnectModal}
+                                className="w-full rounded-lg bg-slate-900 py-2.5 text-[12px] font-semibold text-white hover:bg-slate-800"
+                            >
                                 Connect Storage
                             </Button>
                         </CardContent>
