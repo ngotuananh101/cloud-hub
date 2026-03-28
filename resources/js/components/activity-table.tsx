@@ -1,6 +1,6 @@
 'use client';
 
-import type { ColumnDef, PaginationState } from '@tanstack/react-table';
+import type { ColumnDef, PaginationState, OnChangeFn } from '@tanstack/react-table';
 import { format, isToday, isYesterday } from 'date-fns';
 import {
     Activity as ActivityIcon,
@@ -141,6 +141,7 @@ export const columns: ColumnDef<Activity>[] = [
 export function ActivityTable() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [pageCount, setPageCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
@@ -160,7 +161,16 @@ export function ActivityTable() {
                 }
 
                 setActivities(data.data || []);
-                setPageCount(data.last_page || 0);
+                setPageCount(Math.max(1, data.last_page || 1));
+
+                if (typeof data.current_page === 'number') {
+                    setCurrentPage(Math.max(1, data.current_page));
+                    setPagination((prev) => ({
+                        ...prev,
+                        pageIndex: Math.max(0, data.current_page - 1),
+                    }));
+                }
+
                 setLoading(false);
             })
             .catch(() => {
@@ -174,9 +184,11 @@ export function ActivityTable() {
         };
     }, [pagination.pageIndex, pagination.pageSize]);
 
-    const handlePaginationChange = (updater: any) => {
+    const handlePaginationChange: OnChangeFn<PaginationState> = (updater) => {
         setLoading(true);
-        setPagination(updater);
+        setPagination((prev) =>
+            typeof updater === 'function' ? updater(prev) : updater,
+        );
     };
 
     if (loading && activities.length === 0) {
@@ -192,6 +204,7 @@ export function ActivityTable() {
             columns={columns}
             data={activities}
             pageCount={pageCount}
+            currentPage={currentPage}
             pagination={pagination}
             onPaginationChange={handlePaginationChange}
         />
