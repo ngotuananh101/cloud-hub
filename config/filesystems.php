@@ -62,7 +62,8 @@ return [
 
         'telegram' => [
             'driver' => 'telegram',
-            'token' => env('TELEGRAM_BOT_TOKEN'),
+            'token' => env('TELEGRAM_TOKEN'),
+            'base_url' => env('TELEGRAM_BASE_URL'),
         ],
     ],
 
