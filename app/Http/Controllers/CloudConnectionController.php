@@ -48,6 +48,54 @@ class CloudConnectionController extends Controller
         return back()->with('success', "Cloud storage '{$connection->name}' connected successfully!");
     }
 
+    public function update(Request $request, CloudConnection $cloudConnection)
+    {
+        if ($cloudConnection->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'credentials' => 'nullable|array',
+            'settings' => 'nullable|array',
+        ]);
+
+        $oldName = $cloudConnection->name;
+        
+        $updateData = [
+            'name' => $validated['name'],
+        ];
+
+        // Only update credentials if provided
+        if (!empty($validated['credentials'])) {
+            $updateData['credentials'] = array_merge(
+                $cloudConnection->getRawOriginal('credentials') ? json_decode(decrypt($cloudConnection->getRawOriginal('credentials')), true) : [],
+                $validated['credentials']
+            );
+        }
+
+        if (isset($validated['settings'])) {
+            $updateData['settings'] = array_merge($cloudConnection->settings ?? [], $validated['settings']);
+        }
+
+        $cloudConnection->update($updateData);
+
+        activity('cloud_connection')
+            ->causedBy(Auth::user())
+            ->performedOn($cloudConnection)
+            ->withProperties(array_merge(
+                DeviceHelper::properties($request),
+                [
+                    'provider' => $cloudConnection->provider?->name ?? 'Unknown',
+                    'old_name' => $oldName,
+                    'new_name' => $validated['name'],
+                ]
+            ))
+            ->log("Updated cloud connection '{$oldName}' ({$cloudConnection->provider?->name})");
+
+        return back()->with('success', 'Cloud connection updated successfully!');
+    }
+
     public function destroy(CloudConnection $cloudConnection)
     {
         if ($cloudConnection->user_id !== Auth::id()) {

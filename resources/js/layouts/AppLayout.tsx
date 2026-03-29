@@ -7,11 +7,13 @@ import {
     LayoutDashboard,
     LogOut,
     Settings,
+    Settings2,
     Upload,
 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { route } from 'ziggy-js';
 import ConnectCloudModal from '@/components/ConnectCloudModal';
+import EditConnectionModal from '@/components/EditConnectionModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +35,8 @@ interface Provider {
     name: string;
     icon: string;
     icon_url: string;
+    driver: string;
+    config_schema: Record<string, any>;
 }
 
 interface CloudConnection {
@@ -40,6 +44,8 @@ interface CloudConnection {
     provider_id: string;
     name: string;
     provider: Provider;
+    settings?: Record<string, any>;
+    credentials?: Record<string, any>;
 }
 
 export default function AppLayout({ title, children }: AppLayoutProps) {
@@ -50,10 +56,14 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
 
     const user = auth.user;
     const [isConnectModalOpen, setIsConnectModalOpen] = React.useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+    const [selectedConnection, setSelectedConnection] =
+        React.useState<CloudConnection | null>(null);
 
     useEffect(() => {
         const handleOpenModal = () => setIsConnectModalOpen(true);
         window.addEventListener('open-connect-cloud-modal', handleOpenModal);
+
         return () =>
             window.removeEventListener(
                 'open-connect-cloud-modal',
@@ -75,6 +85,7 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
         {
             label: 'CONNECTED STORAGE',
             items: cloudConnections.map((conn) => ({
+                id: conn.id,
                 name: conn.name,
                 icon_url: conn.provider.icon_url,
                 route: null,
@@ -162,27 +173,60 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                                             {item.name}
                                                         </Link>
                                                     ) : (
-                                                        <span
-                                                            className={`flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium ${
-                                                                isActive
-                                                                    ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                                    : 'text-slate-400'
-                                                            }`}
-                                                        >
-                                                            {item.icon ? (
-                                                                <item.icon className="h-4 w-4" />
-                                                            ) : (
-                                                                <img
-                                                                    src={
-                                                                        (
-                                                                            item as any
-                                                                        ).icon_url
-                                                                    }
-                                                                    className="h-4 w-4 rounded-sm"
-                                                                />
+                                                        <div className="group relative flex items-center justify-between">
+                                                            <span
+                                                                className={`flex flex-1 cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                                                    isActive
+                                                                        ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                        : 'text-slate-600 group-hover:bg-slate-50 group-hover:text-slate-900'
+                                                                }`}
+                                                            >
+                                                                {item.icon ? (
+                                                                    <item.icon className="h-4 w-4" />
+                                                                ) : (
+                                                                    <img
+                                                                        src={
+                                                                            (
+                                                                                item as any
+                                                                            ).icon_url
+                                                                        }
+                                                                        className="h-4 w-4 rounded-sm"
+                                                                    />
+                                                                )}
+                                                                <span className="truncate">
+                                                                    {item.name}
+                                                                </span>
+                                                            </span>
+
+                                                            {group.label ===
+                                                                'CONNECTED STORAGE' && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="absolute right-1.5 h-7 w-7 text-slate-400 opacity-0 transition-opacity hover:bg-slate-200 hover:text-slate-600 group-hover:opacity-100"
+                                                                    onClick={(
+                                                                        e,
+                                                                    ) => {
+                                                                        e.stopPropagation();
+                                                                        setSelectedConnection(
+                                                                            cloudConnections.find(
+                                                                                (
+                                                                                    c,
+                                                                                ) =>
+                                                                                    c.id ===
+                                                                                    item.id,
+                                                                            ) ||
+                                                                                null,
+                                                                        );
+                                                                        setIsEditModalOpen(
+                                                                            true,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Settings2 className="h-3.5 w-3.5" />
+                                                                </Button>
                                                             )}
-                                                            {item.name}
-                                                        </span>
+                                                        </div>
                                                     )}
                                                 </li>
                                             );
@@ -278,6 +322,12 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
             <ConnectCloudModal
                 open={isConnectModalOpen}
                 onOpenChange={setIsConnectModalOpen}
+            />
+
+            <EditConnectionModal
+                connection={selectedConnection}
+                open={isEditModalOpen}
+                onOpenChange={setIsEditModalOpen}
             />
         </>
     );

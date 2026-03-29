@@ -18,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/activities', [ActivityController::class, 'index'])->name('api.activities');
 
     Route::post('/cloud-connections', [CloudConnectionController::class, 'store'])->name('cloud-connections.store');
+    Route::patch('/cloud-connections/{cloudConnection}', [CloudConnectionController::class, 'update'])->name('cloud-connections.update');
     Route::delete('/cloud-connections/{cloudConnection}', [CloudConnectionController::class, 'destroy'])->name('cloud-connections.destroy');
 
     // OAuth Routes
