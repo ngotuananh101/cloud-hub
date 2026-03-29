@@ -211,7 +211,7 @@ class CloudStorageServiceProvider extends ServiceProvider
             $s3Config = [
                 'region' => $config['region'] ?? 'us-east-1',
                 'version' => 'latest',
-                'use_path_style_endpoint' => $config['use_path_style_endpoint'] ?? false,
+                'use_path_style_endpoint' => filter_var($config['use_path_style_endpoint'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'credentials' => [
                     'key' => $config['key'] ?? '',
                     'secret' => $config['secret'] ?? '',

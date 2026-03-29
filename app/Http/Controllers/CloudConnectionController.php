@@ -149,6 +149,12 @@ class CloudConnectionController extends Controller
         $config = array_merge($credentials, $settings);
         $config['driver'] = $providerId;
 
+        // Normalize boolean strings
+        foreach ($config as $key => $value) {
+            if ($value === 'true') $config[$key] = true;
+            if ($value === 'false') $config[$key] = false;
+        }
+
         // Special handling for drivers that use different key names internally
         if ($providerId === 's3') {
             $config['bucket'] = $credentials['bucket'] ?? '';

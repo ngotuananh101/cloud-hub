@@ -33,6 +33,12 @@ class FileController extends Controller
                 $config = array_merge($credentials, $settings);
                 $config['driver'] = $connection->provider_id;
 
+                // Normalize boolean strings
+                foreach ($config as $key => $value) {
+                    if ($value === 'true') $config[$key] = true;
+                    if ($value === 'false') $config[$key] = false;
+                }
+
                 // Special handling for drivers that use different key names internally
                 if ($connection->provider_id === 's3') {
                     $config['bucket'] = $credentials['bucket'] ?? '';
