@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -53,9 +54,19 @@ export default function ConnectCloudModal({
             settings: {} as Record<string, any>,
         });
 
+    const [telegramStep, setTelegramStep] = useState<'phone' | 'code'>('phone');
+    const [telegramData, setTelegramData] = useState({
+        phone: '',
+        code: '',
+        password: '',
+    });
+    const [telegramProcessing, setTelegramProcessing] = useState(false);
+
     const handleOpenChange = (isOpen: boolean) => {
         if (!isOpen) {
             setSelectedProvider(null);
+            setTelegramStep('phone');
+            setTelegramData({ phone: '', code: '', password: '' });
             reset();
             clearErrors();
         }
@@ -110,6 +121,62 @@ export default function ConnectCloudModal({
                 }
             },
         });
+    };
+
+    const handleTelegramRequestCode = async () => {
+        if (!telegramData.phone) {
+            toast.error('Please enter your phone number.');
+
+            return;
+        }
+
+        setTelegramProcessing(true);
+
+        try {
+            await axios.post(route('telegram.request-code'), {
+                phone: telegramData.phone,
+            });
+
+            setTelegramStep('code');
+            toast.success('Login code sent to your Telegram account.');
+        } catch (err: any) {
+            toast.error(
+                err.response?.data?.message || 'Failed to request code.',
+            );
+        } finally {
+            setTelegramProcessing(false);
+        }
+    };
+
+    const handleTelegramLogin = async () => {
+        if (!telegramData.code) {
+            toast.error('Please enter the code.');
+
+            return;
+        }
+
+        setTelegramProcessing(true);
+
+        try {
+            const response = await axios.post(route('telegram.login'), {
+                phone: telegramData.phone,
+                code: telegramData.code,
+                password: telegramData.password,
+                name: data.name,
+            });
+
+            if (response.data.success) {
+                onOpenChange(false);
+                toast.success('Telegram connected successfully!');
+
+                // Wait a bit to ensure the connection is reflected in the UI
+                window.location.reload();
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || 'Login failed.');
+        } finally {
+            setTelegramProcessing(false);
+        }
     };
 
     return (
@@ -169,7 +236,113 @@ export default function ConnectCloudModal({
 
                     {/* Scrollable Content (Dynamic fields) */}
                     <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-                        {selectedProvider && (
+                        {selectedProvider && selectedProvider.id === 'telegram' ? (
+                            <div className="space-y-6">
+                                <div className="space-y-1.5">
+                                    <Label
+                                        htmlFor="cc_name"
+                                        className="text-[11px] font-bold text-slate-700"
+                                    >
+                                        CONNECTION NAME
+                                    </Label>
+                                    <Input
+                                        id="cc_name"
+                                        value={data.name}
+                                        onChange={(e) =>
+                                            setData('name', e.target.value)
+                                        }
+                                        placeholder="e.g. My Telegram Files"
+                                        className="h-11 rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222]"
+                                    />
+                                </div>
+
+                                {telegramStep === 'phone' ? (
+                                    <div className="space-y-1.5">
+                                        <Label
+                                            htmlFor="tg_phone"
+                                            className="text-[11px] font-bold text-slate-700"
+                                        >
+                                            PHONE NUMBER
+                                        </Label>
+                                        <Input
+                                            id="tg_phone"
+                                            value={telegramData.phone}
+                                            onChange={(e) =>
+                                                setTelegramData((prev) => ({
+                                                    ...prev,
+                                                    phone: e.target.value,
+                                                }))
+                                            }
+                                            placeholder="+84..."
+                                            className="h-11 rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222]"
+                                        />
+                                        <p className="mt-1 text-[11px] text-slate-400">
+                                            Enter your full international phone
+                                            number.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <Label
+                                                htmlFor="tg_code"
+                                                className="text-[11px] font-bold text-slate-700"
+                                            >
+                                                LOGIN CODE
+                                            </Label>
+                                            <Input
+                                                id="tg_code"
+                                                value={telegramData.code}
+                                                onChange={(e) =>
+                                                    setTelegramData(
+                                                        (prev) => ({
+                                                            ...prev,
+                                                            code: e.target.value,
+                                                        }),
+                                                    )
+                                                }
+                                                placeholder="Enter the code sent to your Telegram"
+                                                className="h-11 rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222]"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label
+                                                htmlFor="tg_password"
+                                                className="text-[11px] font-bold text-slate-700"
+                                            >
+                                                PASSWORD (IF ENABLED)
+                                            </Label>
+                                            <Input
+                                                id="tg_password"
+                                                type="password"
+                                                value={telegramData.password}
+                                                onChange={(e) =>
+                                                    setTelegramData(
+                                                        (prev) => ({
+                                                            ...prev,
+                                                            password:
+                                                                e.target.value,
+                                                        }),
+                                                    )
+                                                }
+                                                placeholder="Your 2FA password"
+                                                className="h-11 rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222]"
+                                            />
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="link"
+                                            onClick={() =>
+                                                setTelegramStep('phone')
+                                            }
+                                            className="h-auto p-0 text-[11px] text-[#c12222]"
+                                        >
+                                            Change phone number
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : selectedProvider && (
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
                                     <Label
@@ -328,20 +501,47 @@ export default function ConnectCloudModal({
                         >
                             Cancel
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={processing || !selectedProvider}
-                            className="h-11 min-w-[140px] rounded-lg bg-[#c12222] px-6 text-[13px] font-bold text-white shadow-md hover:bg-[#a31c1c] active:scale-[0.98]"
-                        >
-                            {processing ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Connecting...
-                                </>
-                            ) : (
-                                'Connect Provider'
-                            )}
-                        </Button>
+                        
+                        {selectedProvider?.id === 'telegram' ? (
+                            <Button
+                                type="button"
+                                onClick={
+                                    telegramStep === 'phone'
+                                        ? handleTelegramRequestCode
+                                        : handleTelegramLogin
+                                }
+                                disabled={
+                                    telegramProcessing || !telegramData.phone
+                                }
+                                className="h-11 min-w-[140px] rounded-lg bg-[#c12222] px-6 text-[13px] font-bold text-white shadow-md hover:bg-[#a31c1c] active:scale-[0.98]"
+                            >
+                                {telegramProcessing ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : telegramStep === 'phone' ? (
+                                    'Send Login Code'
+                                ) : (
+                                    'Connect Telegram'
+                                )}
+                            </Button>
+                        ) : (
+                            <Button
+                                type="submit"
+                                disabled={processing || !selectedProvider}
+                                className="h-11 min-w-[140px] rounded-lg bg-[#c12222] px-6 text-[13px] font-bold text-white shadow-md hover:bg-[#a31c1c] active:scale-[0.98]"
+                            >
+                                {processing ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Connecting...
+                                    </>
+                                ) : (
+                                    'Connect Provider'
+                                )}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </DialogContent>

@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CloudConnectionController;
 use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\TelegramController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -21,7 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/cloud-connections/{cloudConnection}', [CloudConnectionController::class, 'update'])->name('cloud-connections.update');
     Route::delete('/cloud-connections/{cloudConnection}', [CloudConnectionController::class, 'destroy'])->name('cloud-connections.destroy');
 
-    // OAuth Routes
+    // OAuth & Telegram Auth Routes
     Route::get('/oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
     Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
+
+    Route::post('/telegram/request-code', [TelegramController::class, 'requestCode'])->name('telegram.request-code');
+    Route::post('/telegram/login', [TelegramController::class, 'login'])->name('telegram.login');
 });
