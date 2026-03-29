@@ -56,15 +56,20 @@ class FileController extends Controller
                     $itemPath = $item->path();
                     $name = basename($itemPath);
 
+                    // Try to get metadata from the item itself (Flysystem v3 StorageAttributes)
+                    $size = $isDir ? null : (method_exists($item, 'fileSize') ? $item->fileSize() : null);
+                    $mimeType = $isDir ? null : (method_exists($item, 'mimeType') ? $item->mimeType() : null);
+                    $lastModified = $item->lastModified();
+
                     $files[] = [
                         'id' => md5($itemPath),
                         'name' => $name,
                         'path' => $itemPath,
                         'hash' => $isDir ? CloudHelper::encodePath($itemPath) : null,
                         'type' => $isDir ? 'dir' : 'file',
-                        'mime_type' => $isDir ? null : $this->getMimeType($itemPath, $disk),
-                        'size' => $isDir ? null : $this->getFileSize($itemPath, $disk),
-                        'last_modified' => $this->getLastModified($itemPath, $disk),
+                        'mime_type' => $mimeType ?? ($isDir ? null : $this->getMimeType($itemPath, $disk)),
+                        'size' => $size ?? ($isDir ? null : $this->getFileSize($itemPath, $disk)),
+                        'last_modified' => $lastModified ? Carbon::createFromTimestamp($lastModified)->toIso8601String() : $this->getLastModified($itemPath, $disk),
                         'extension' => strtolower(pathinfo($name, PATHINFO_EXTENSION)),
                     ];
                 }
@@ -98,7 +103,7 @@ class FileController extends Controller
     {
         try {
             return $disk->mimeType($path);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return 'application/octet-stream';
         }
     }
@@ -107,7 +112,7 @@ class FileController extends Controller
     {
         try {
             return $disk->size($path);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }
@@ -117,7 +122,7 @@ class FileController extends Controller
         try {
             $timestamp = $disk->lastModified($path);
             return Carbon::createFromTimestamp($timestamp)->toIso8601String();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }
