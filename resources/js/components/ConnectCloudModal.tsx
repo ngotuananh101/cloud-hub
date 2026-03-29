@@ -13,6 +13,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface Provider {
     id: string;
@@ -194,16 +201,18 @@ export default function ConnectCloudModal({
                                         <div
                                             key={key}
                                             className={
-                                                Array.isArray(type) ||
-                                                key
-                                                    .toLowerCase()
-                                                    .includes('secret') ||
-                                                key
-                                                    .toLowerCase()
-                                                    .includes('token') ||
-                                                key
-                                                    .toLowerCase()
-                                                    .includes('uri')
+                                                [
+                                                    'secret',
+                                                    'token',
+                                                    'key',
+                                                    'uri',
+                                                    'url',
+                                                    'id',
+                                                ].some((keyword) =>
+                                                    key
+                                                        .toLowerCase()
+                                                        .includes(keyword),
+                                                )
                                                     ? 'col-span-2'
                                                     : 'col-span-1'
                                             }
@@ -215,42 +224,82 @@ export default function ConnectCloudModal({
                                                 >
                                                     {key.replace(/_/g, ' ')}
                                                 </Label>
-                                                <Input
-                                                    id={`cc_${key}`}
-                                                    type={
-                                                        key
-                                                            .toLowerCase()
-                                                            .includes(
-                                                                'password',
-                                                            ) ||
-                                                        key
-                                                            .toLowerCase()
-                                                            .includes(
-                                                                'secret',
-                                                            ) ||
-                                                        key
-                                                            .toLowerCase()
-                                                            .includes('token')
-                                                            ? 'password'
-                                                            : 'text'
-                                                    }
-                                                    placeholder={
-                                                        Array.isArray(type)
-                                                            ? `e.g. ${type[0]}`
-                                                            : `Enter ${key.replace(/_/g, ' ')}`
-                                                    }
-                                                    className="h-11 rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222]"
-                                                    value={
-                                                        data.credentials[key] ||
-                                                        ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        handleCredentialChange(
-                                                            key,
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
+                                                {Array.isArray(type) ? (
+                                                    <Select
+                                                        value={
+                                                            data.credentials[
+                                                                key
+                                                            ] || ''
+                                                        }
+                                                        onValueChange={(
+                                                            value,
+                                                        ) =>
+                                                            handleCredentialChange(
+                                                                key,
+                                                                value,
+                                                            )
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="h-11 w-full rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus:ring-2 focus:ring-[#c12222]">
+                                                            <SelectValue
+                                                                placeholder={`Select ${key.replace(/_/g, ' ')}`}
+                                                            />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-xl border-slate-100 shadow-xl">
+                                                            {type.map(
+                                                                (option) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            option
+                                                                        }
+                                                                        value={
+                                                                            option
+                                                                        }
+                                                                        className="rounded-lg py-2.5 text-[13px] focus:bg-slate-50 focus:text-[#c12222]"
+                                                                    >
+                                                                        {option}
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                ) : (
+                                                    <Input
+                                                        id={`cc_${key}`}
+                                                        type={
+                                                            key
+                                                                .toLowerCase()
+                                                                .includes(
+                                                                    'password',
+                                                                ) ||
+                                                            key
+                                                                .toLowerCase()
+                                                                .includes(
+                                                                    'secret',
+                                                                ) ||
+                                                            key
+                                                                .toLowerCase()
+                                                                .includes(
+                                                                    'token',
+                                                                )
+                                                                ? 'password'
+                                                                : 'text'
+                                                        }
+                                                        placeholder={`Enter ${key.replace(/_/g, ' ')}`}
+                                                        className="h-11 rounded-lg border-0 bg-slate-50 px-4 text-[13px] ring-1 ring-slate-200 ring-inset focus-visible:ring-2 focus-visible:ring-[#c12222]"
+                                                        value={
+                                                            data.credentials[
+                                                                key
+                                                            ] || ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleCredentialChange(
+                                                                key,
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                )}
                                                 {errors[
                                                     `credentials.${key}`
                                                 ] && (
