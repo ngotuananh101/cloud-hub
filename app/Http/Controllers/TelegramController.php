@@ -74,6 +74,7 @@ class TelegramController extends Controller
             'phone_code_hash' => 'nullable|string',
             'password' => 'nullable|string',
             'name' => 'required|string|max:255',
+            'connection_id' => 'nullable|integer|exists:cloud_connections,id',
         ]);
 
         $sessionId = $this->getSessionId();
@@ -99,21 +100,33 @@ class TelegramController extends Controller
             }
 
             // Authentication successful, create/update cloud connection
-            $provider = Provider::where('id', 'telegram')->firstOrFail();
+            if ($request->connection_id) {
+                $connection = CloudConnection::where('user_id', Auth::id())
+                    ->where('id', $request->connection_id)
+                    ->firstOrFail();
 
-            $connection = CloudConnection::updateOrCreate(
-                [
-                    'user_id' => Auth::id(),
-                    'provider_id' => 'telegram',
+                $connection->update([
                     'name' => $request->name,
-                ],
-                [
                     'credentials' => [
                         'session_id' => $sessionId,
                     ],
                     'status' => 'active',
-                ]
-            );
+                ]);
+            } else {
+                $connection = CloudConnection::updateOrCreate(
+                    [
+                        'user_id' => Auth::id(),
+                        'provider_id' => 'telegram',
+                        'name' => $request->name,
+                    ],
+                    [
+                        'credentials' => [
+                            'session_id' => $sessionId,
+                        ],
+                        'status' => 'active',
+                    ]
+                );
+            }
 
             // Trigger activity log
             activity('cloud_connection')
