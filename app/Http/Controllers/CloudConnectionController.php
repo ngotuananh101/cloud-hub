@@ -7,6 +7,8 @@ use App\Models\CloudConnection;
 use App\Models\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Exception;
 
 class CloudConnectionController extends Controller
 {
@@ -21,8 +23,12 @@ class CloudConnectionController extends Controller
 
         $provider = Provider::findOrFail($validated['provider_id']);
 
-        // Here you would normally validate the credentials against the provider's driver
-        // For now, we'll just save it.
+        // Check connection for non-OAuth providers
+        $this->validateConnection(
+            $provider->id, 
+            $validated['credentials'], 
+            $validated['settings'] ?? []
+        );
 
         $connection = CloudConnection::create([
             'user_id' => Auth::id(),
@@ -78,6 +84,17 @@ class CloudConnectionController extends Controller
             $updateData['settings'] = array_merge($cloudConnection->settings ?? [], $validated['settings']);
         }
 
+        if (!empty($validated['credentials']) || isset($validated['settings'])) {
+            $this->validateConnection(
+                $cloudConnection->provider?->id,
+                array_merge(
+                    $cloudConnection->getRawOriginal('credentials') ? json_decode(decrypt($cloudConnection->getRawOriginal('credentials')), true) : [],
+                    $validated['credentials'] ?? []
+                ),
+                array_merge($cloudConnection->settings ?? [], $validated['settings'] ?? [])
+            );
+        }
+
         $cloudConnection->update($updateData);
 
         activity('cloud_connection')
@@ -120,5 +137,33 @@ class CloudConnectionController extends Controller
             ->log("Removed cloud connection '{$connectionName}' ({$providerName})");
 
         return back()->with('success', 'Cloud connection removed.');
+    }
+
+    private function validateConnection(string $providerId, array $credentials, array $settings = [])
+    {
+        $oauthProviders = ['google', 'onedrive', 'dropbox'];
+        if (in_array($providerId, $oauthProviders)) {
+            return;
+        }
+
+        $config = array_merge($credentials, $settings);
+        $config['driver'] = $providerId;
+
+        // Special handling for drivers that use different key names internally
+        if ($providerId === 's3') {
+            $config['bucket'] = $credentials['bucket'] ?? '';
+            $config['key'] = $credentials['key'] ?? '';
+            $config['secret'] = $credentials['secret'] ?? '';
+            $config['region'] = $credentials['region'] ?? 'us-east-1';
+        }
+
+        try {
+            $disk = Storage::build($config);
+            // Attempt to list files as a connection check
+            // We use a low limit or just check the first item for speed
+            $disk->files('/');
+        } catch (Exception $e) {
+            abort(422, "Connection check failed: {$e->getMessage()}");
+        }
     }
 }
