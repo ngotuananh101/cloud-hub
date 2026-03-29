@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DeviceHelper;
 use App\Models\CloudConnection;
 use App\Models\Provider;
 use Illuminate\Http\Request;
@@ -32,6 +33,18 @@ class CloudConnectionController extends Controller
             'status' => 'active',
         ]);
 
+        activity('cloud_connection')
+            ->causedBy(Auth::user())
+            ->performedOn($connection)
+            ->withProperties(array_merge(
+                DeviceHelper::properties($request),
+                [
+                    'provider' => $provider->name,
+                    'connection_name' => $connection->name,
+                ]
+            ))
+            ->log("Connected cloud storage '{$connection->name}' ({$provider->name})");
+
         return back()->with('success', "Cloud storage '{$connection->name}' connected successfully!");
     }
 
@@ -41,7 +54,22 @@ class CloudConnectionController extends Controller
             abort(403);
         }
 
+        $connectionName = $cloudConnection->name;
+        $providerName = $cloudConnection->provider?->name ?? 'Unknown';
+
         $cloudConnection->delete();
+
+        activity('cloud_connection')
+            ->causedBy(Auth::user())
+            ->performedOn($cloudConnection)
+            ->withProperties(array_merge(
+                DeviceHelper::properties(request()),
+                [
+                    'provider' => $providerName,
+                    'connection_name' => $connectionName,
+                ]
+            ))
+            ->log("Removed cloud connection '{$connectionName}' ({$providerName})");
 
         return back()->with('success', 'Cloud connection removed.');
     }

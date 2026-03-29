@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DeviceHelper;
 use App\Models\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -186,8 +187,20 @@ class OAuthController extends Controller
             $connection = $request->user()->cloudConnections()->findOrFail($connectionId);
             $connection->update($updateData);
         } else {
-            $request->user()->cloudConnections()->create($updateData);
+            $connection = $request->user()->cloudConnections()->create($updateData);
         }
+
+        activity('cloud_connection')
+            ->causedBy($request->user())
+            ->performedOn($connection)
+            ->withProperties(array_merge(
+                DeviceHelper::properties($request),
+                [
+                    'provider' => $provider->name,
+                    'connection_name' => $connection->name,
+                ]
+            ))
+            ->log(($connectionId ? 'Updated' : 'Connected')." cloud storage '{$connection->name}' ({$provider->name})");
 
         return redirect()->route('home')->with('success', 'Dropbox connected successfully.');
     }
@@ -261,8 +274,20 @@ class OAuthController extends Controller
             $connection = $request->user()->cloudConnections()->findOrFail($connectionId);
             $connection->update($updateData);
         } else {
-            $request->user()->cloudConnections()->create($updateData);
+            $connection = $request->user()->cloudConnections()->create($updateData);
         }
+
+        activity('cloud_connection')
+            ->causedBy($request->user())
+            ->performedOn($connection)
+            ->withProperties(array_merge(
+                DeviceHelper::properties($request),
+                [
+                    'provider' => $provider->name,
+                    'connection_name' => $connection->name,
+                ]
+            ))
+            ->log(($connectionId ? 'Updated' : 'Connected')." cloud storage '{$connection->name}' ({$provider->name})");
 
         return redirect()->route('home')->with('success', 'Google Drive connected successfully.');
     }
@@ -337,8 +362,20 @@ class OAuthController extends Controller
             $connection = $request->user()->cloudConnections()->findOrFail($connectionId);
             $connection->update($updateData);
         } else {
-            $request->user()->cloudConnections()->create($updateData);
+            $connection = $request->user()->cloudConnections()->create($updateData);
         }
+
+        activity('cloud_connection')
+            ->causedBy($request->user())
+            ->performedOn($connection)
+            ->withProperties(array_merge(
+                DeviceHelper::properties($request),
+                [
+                    'provider' => $provider->name,
+                    'connection_name' => $connection->name,
+                ]
+            ))
+            ->log(($connectionId ? 'Updated' : 'Connected')." cloud storage '{$connection->name}' ({$provider->name})");
 
         return redirect()->route('home')->with('success', 'OneDrive connected successfully.');
     }
