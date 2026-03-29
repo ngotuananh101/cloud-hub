@@ -16,7 +16,18 @@ class OAuthController extends Controller
      */
     public function redirect(Request $request, string $providerId)
     {
-        Provider::where('is_active', true)->findOrFail($providerId);
+        $provider = Provider::where('is_active', true)->findOrFail($providerId);
+
+        activity('cloud_connection_oauth')
+            ->causedBy($request->user())
+            ->withProperties(array_merge(
+                DeviceHelper::properties($request),
+                [
+                    'provider' => $provider->name,
+                    'is_reconnect' => $request->has('connection_id'),
+                ]
+            ))
+            ->log("Initiated OAuth redirection for '{$provider->name}'".($request->has('connection_id') ? ' (Reconnect)' : ''));
 
         return match ($providerId) {
             'dropbox' => $this->redirectToDropbox($request),

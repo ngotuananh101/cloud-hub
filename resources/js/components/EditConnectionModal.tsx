@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { route } from 'ziggy-js';
@@ -70,6 +70,7 @@ export default function EditConnectionModal({
             reset();
             clearErrors();
         }
+        
         onOpenChange(isOpen);
     };
 
@@ -109,9 +110,25 @@ export default function EditConnectionModal({
         });
     };
 
+    const handleReconnect = () => {
+        if (!connection) {
+            return;
+        }
+
+        // Redirect to OAuth authorization page with the connection name
+        window.location.href = route('oauth.redirect', {
+            provider: connection.provider_id,
+            name: data.name,
+        });
+    };
+
     if (!connection) {
         return null;
     }
+
+    const isOAuth = ['google', 'onedrive', 'dropbox'].includes(
+        connection.provider_id,
+    );
 
     return (
         <>
@@ -238,15 +255,29 @@ export default function EditConnectionModal({
                         </div>
 
                         <div className="flex shrink-0 items-center justify-between border-t border-slate-100 bg-slate-50/5 px-6 py-4">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setIsConfirmOpen(true)}
-                                className="h-11 items-center gap-2 rounded-lg text-[13px] font-semibold text-red-500 hover:bg-red-50 hover:text-red-600"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                                Disconnect
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setIsConfirmOpen(true)}
+                                    className="h-11 items-center gap-2 rounded-lg text-[13px] font-semibold text-red-500 hover:bg-red-50 hover:text-red-600"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Disconnect
+                                </Button>
+
+                                {isOAuth && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={handleReconnect}
+                                        className="h-11 items-center gap-2 rounded-lg text-[13px] font-semibold text-orange-500 hover:bg-orange-50 hover:text-orange-600"
+                                    >
+                                        <RefreshCw className="h-4 w-4" />
+                                        Reconnect
+                                    </Button>
+                                )}
+                            </div>
 
                             <div className="flex items-center gap-3">
                                 <Button
