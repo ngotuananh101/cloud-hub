@@ -35,6 +35,18 @@ export default function Browse({
     breadcrumbs,
     error,
 }: PageProps) {
+    const [searchQuery, setSearchQuery] = React.useState('');
+
+    const filteredFiles = React.useMemo(() => {
+        if (!searchQuery.trim()) {
+            return files;
+        }
+
+        return files.filter((file) =>
+            file.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+    }, [files, searchQuery]);
+
     return (
         <AppLayout title={`${connection.name} - Browse`}>
             <Head title={`${connection.name} - Browse`} />
@@ -59,6 +71,8 @@ export default function Browse({
                             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#c12222]" />
                             <Input
                                 placeholder="Search files..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="h-11 w-64 rounded-xl border-slate-100 bg-slate-50 pl-10 text-[13px] ring-[#c12222] focus:border-[#c12222] focus:ring-1"
                             />
                         </div>
@@ -116,7 +130,10 @@ export default function Browse({
                         <p className="text-sm opacity-80">{error}</p>
                     </div>
                 ) : (
-                    <FileTable connectionId={connection.id} files={files} />
+                    <FileTable
+                        connectionId={connection.id}
+                        files={filteredFiles}
+                    />
                 )}
             </div>
         </AppLayout>
