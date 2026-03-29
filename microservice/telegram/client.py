@@ -20,10 +20,13 @@ class TelegramStorageClient:
         if session_id not in self.clients:
             session_path = os.path.join(SESSIONS_DIR, session_id)
             os.makedirs(SESSIONS_DIR, exist_ok=True)
-            client = TelegramClient(session_path, API_ID, API_HASH)
+            self.clients[session_id] = TelegramClient(session_path, API_ID, API_HASH)
+        
+        client = self.clients[session_id]
+        if not client.is_connected():
+            print(f"Connecting client for session: {session_id}")
             await client.connect()
-            self.clients[session_id] = client
-        return self.clients[session_id]
+        return client
 
     async def is_user_authorized(self, session_id: str):
         client = await self.get_client(session_id)
