@@ -39,7 +39,7 @@ export default function Browse({
         <AppLayout title={`${connection.name} - Browse`}>
             <Head title={`${connection.name} - Browse`} />
 
-            <div className="flex flex-col gap-4">
+            <div className="flex h-full flex-col gap-4 overflow-hidden">
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">

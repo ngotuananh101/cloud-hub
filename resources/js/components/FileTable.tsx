@@ -107,23 +107,23 @@ export default function FileTable({ connectionId, files }: FileTableProps) {
     };
 
     return (
-        <div className="overflow-hidden rounded-lg border border-slate-100 bg-white shadow-sm">
-            <table className="w-full text-left">
-                <thead>
-                    <tr className="border-b border-slate-50 bg-slate-50/30">
-                        <th className="px-3 py-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+        <div className="flex-1 overflow-auto rounded-lg border border-slate-100 bg-white shadow-sm">
+            <table className="w-full text-left border-separate border-spacing-0">
+                <thead className="sticky top-0 z-10">
+                    <tr className="bg-slate-50/90 backdrop-blur-sm">
+                        <th className="border-b border-slate-100 px-3 py-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                             Name
                         </th>
-                        <th className="px-3 py-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                        <th className="border-b border-slate-100 px-3 py-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                             Size
                         </th>
-                        <th className="px-3 py-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                        <th className="border-b border-slate-100 px-3 py-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                             Type
                         </th>
-                        <th className="px-3 py-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                        <th className="border-b border-slate-100 px-3 py-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                             Last Modified
                         </th>
-                        <th className="px-3 py-2"></th>
+                        <th className="border-b border-slate-100 px-3 py-3"></th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
