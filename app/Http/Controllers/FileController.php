@@ -28,26 +28,7 @@ class FileController extends Controller
 
         try {
             $files = CloudHelper::rememberCloudContents($connection, $path, function () use ($connection, $path) {
-                $credentials = $connection->credentials;
-                $settings = $connection->settings ?? [];
-                $config = array_merge($credentials, $settings);
-                $config['driver'] = $connection->provider_id;
-
-                // Normalize boolean strings
-                foreach ($config as $key => $value) {
-                    if ($value === 'true') $config[$key] = true;
-                    if ($value === 'false') $config[$key] = false;
-                }
-
-                // Special handling for drivers that use different key names internally
-                if ($connection->provider_id === 's3') {
-                    $config['bucket'] = $credentials['bucket'] ?? '';
-                    $config['key'] = $credentials['key'] ?? '';
-                    $config['secret'] = $credentials['secret'] ?? '';
-                    $config['region'] = $credentials['region'] ?? 'us-east-1';
-                }
-
-                $disk = Storage::build($config);
+                $disk = $this->getDisk($connection);
                 $contents = $disk->listContents($path, false);
                 $files = [];
 
@@ -146,5 +127,68 @@ class FileController extends Controller
         }
 
         return $breadcrumbs;
+    }
+    /**
+     * Create a new folder in the specified path.
+     */
+    public function storeFolder(Request $request, CloudConnection $connection)
+    {
+        if ($connection->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'path' => 'nullable|string',
+        ]);
+
+        $parentPath = CloudHelper::decodePath($request->input('path'));
+        $folderName = $request->input('name');
+        
+        // Clean up the folder name and join with parent path
+        $fullPath = $parentPath === '/' ? $folderName : rtrim($parentPath, '/') . '/' . $folderName;
+
+        try {
+            $disk = $this->getDisk($connection);
+            $disk->makeDirectory($fullPath);
+            
+            // Clear cache for the parent path so the new folder shows up
+            CloudHelper::clearCloudCache($connection, $parentPath);
+
+            return back()->with('success', "Folder '{$folderName}' created successfully.");
+        } catch (\Exception $e) {
+            return back()->with('error', "Failed to create folder: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Build the filesystem disk based on connection credentials.
+     */
+    private function getDisk(CloudConnection $connection)
+    {
+        $credentials = $connection->credentials;
+        $settings = $connection->settings ?? [];
+        $config = array_merge($credentials, $settings);
+        $config['driver'] = $connection->provider_id;
+
+        // Normalize boolean strings
+        foreach ($config as $key => $value) {
+            if ($value === 'true') {
+                $config[$key] = true;
+            }
+            if ($value === 'false') {
+                $config[$key] = false;
+            }
+        }
+
+        // Special handling for drivers that use different key names internally
+        if ($connection->provider_id === 's3') {
+            $config['bucket'] = $credentials['bucket'] ?? '';
+            $config['key'] = $credentials['key'] ?? '';
+            $config['secret'] = $credentials['secret'] ?? '';
+            $config['region'] = $credentials['region'] ?? 'us-east-1';
+        }
+
+        return Storage::build($config);
     }
 }

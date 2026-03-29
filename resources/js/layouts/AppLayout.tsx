@@ -156,106 +156,51 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
 
                                             return (
                                                 <li key={item.name}>
-                                                    {item.route ? (
-                                                    <Link
-                                                        href={
-                                                            item.route ===
-                                                            'clouds.browse'
-                                                                ? route(
-                                                                      item.route,
-                                                                      {
-                                                                          connection:
-                                                                              item.id,
-                                                                      },
-                                                                  )
-                                                                : route(
-                                                                      item.route,
-                                                                  )
-                                                        }
-                                                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
-                                                            isActive
-                                                                ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                                        }`}
-                                                    >
-                                                        {item.icon ? (
-                                                            <item.icon className="h-4 w-4" />
-                                                        ) : (
-                                                            <img
-                                                                src={
-                                                                    (
-                                                                        item as any
-                                                                    ).icon_url
-                                                                }
-                                                                className="h-4 w-4 rounded-sm"
-                                                            />
-                                                        )}
-                                                        {item.name}
-                                                    </Link>
-                                                    ) : (
-                                                        <div className="group relative flex items-center justify-between">
-                                                            <Link
-                                                                href={route(
-                                                                    item.route,
-                                                                    {
-                                                                        connection:
-                                                                            item.id,
-                                                                    },
-                                                                )}
-                                                                className={`flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
-                                                                    isActive
-                                                                        ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                                        : 'text-slate-600 group-hover:bg-slate-50 group-hover:text-slate-900'
-                                                                }`}
-                                                            >
-                                                                {item.icon ? (
-                                                                    <item.icon className="h-4 w-4" />
-                                                                ) : (
-                                                                    <img
-                                                                        src={
-                                                                            (
-                                                                                item as any
-                                                                            ).icon_url
-                                                                        }
-                                                                        className="h-4 w-4 rounded-sm"
-                                                                    />
-                                                                )}
-                                                                <span className="truncate">
-                                                                    {item.name}
-                                                                </span>
-                                                            </Link>
-
-                                                            {group.label ===
-                                                                'CONNECTED STORAGE' && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="absolute right-1.5 h-7 w-7 text-slate-400 opacity-0 transition-opacity hover:bg-slate-200 hover:text-slate-600 group-hover:opacity-100"
-                                                                    onClick={(
-                                                                        e,
-                                                                    ) => {
-                                                                        e.preventDefault();
-                                                                        e.stopPropagation();
-                                                                        setSelectedConnection(
-                                                                            cloudConnections.find(
-                                                                                (
-                                                                                    c,
-                                                                                ) =>
-                                                                                    c.id ===
-                                                                                    item.id,
-                                                                            ) ||
-                                                                                null,
-                                                                        );
-                                                                        setIsEditModalOpen(
-                                                                            true,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    <Settings2 className="h-3.5 w-3.5" />
-                                                                </Button>
+                                                    <div className="group relative flex items-center justify-between">
+                                                        <Link
+                                                            href={
+                                                                item.route === 'clouds.browse'
+                                                                    ? route(item.route, { connection: item.id })
+                                                                    : item.route
+                                                                        ? route(item.route)
+                                                                        : '#'
+                                                            }
+                                                            className={`flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                                                isActive
+                                                                    ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                    : 'text-slate-600 group-hover:bg-slate-50 group-hover:text-slate-900'
+                                                            }`}
+                                                        >
+                                                            {item.icon ? (
+                                                                <item.icon className="h-4 w-4" />
+                                                            ) : (
+                                                                <img
+                                                                    src={(item as any).icon_url}
+                                                                    className="h-4 w-4 rounded-sm"
+                                                                />
                                                             )}
-                                                        </div>
-                                                    )}
+                                                            <span className="truncate">{item.name}</span>
+                                                        </Link>
+
+                                                        {group.label === 'CONNECTED STORAGE' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="absolute right-1.5 h-7 w-7 text-slate-400 opacity-0 transition-opacity hover:bg-slate-200 hover:text-slate-600 group-hover:opacity-100"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    const connection = cloudConnections.find(c => c.id === item.id);
+                                                                    if (connection) {
+                                                                        setSelectedConnection(connection);
+                                                                        setIsEditModalOpen(true);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Settings2 className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </li>
                                             );
                                         })

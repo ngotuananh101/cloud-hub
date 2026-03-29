@@ -3,6 +3,7 @@ import { Upload, Plus, Share2, Trash2, Copy, Move, Search } from 'lucide-react';
 import React from 'react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import FileTable from '@/components/FileTable';
+import NewFolderModal from '@/components/NewFolderModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout';
@@ -31,11 +32,15 @@ interface PageProps {
 
 export default function Browse({
     connection,
+    currentPath,
+    currentHash,
     files,
     breadcrumbs,
     error,
 }: PageProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [isNewFolderModalOpen, setIsNewFolderModalOpen] =
+        React.useState(false);
 
     const filteredFiles = React.useMemo(() => {
         if (!searchQuery.trim()) {
@@ -109,7 +114,10 @@ export default function Browse({
                             </Button>
                         </div>
 
-                        <Button className="h-11 gap-2 rounded-xl border border-slate-200 bg-white px-5 text-[13px] font-bold text-slate-700 shadow-sm hover:bg-slate-50">
+                        <Button
+                            onClick={() => setIsNewFolderModalOpen(true)}
+                            className="h-11 gap-2 rounded-xl border border-slate-200 bg-white px-5 text-[13px] font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+                        >
                             <Plus className="h-4 w-4" />
                             New Folder
                         </Button>
@@ -136,6 +144,13 @@ export default function Browse({
                     />
                 )}
             </div>
+
+            <NewFolderModal
+                isOpen={isNewFolderModalOpen}
+                onClose={() => setIsNewFolderModalOpen(false)}
+                connectionId={connection.id}
+                currentHash={currentHash}
+            />
         </AppLayout>
     );
 }
