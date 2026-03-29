@@ -81,4 +81,30 @@ class CloudHelper
             $callback
         );
     }
+
+    /**
+     * Encode a path to a URL-safe Base64 string.
+     */
+    public static function encodePath(string $path): string
+    {
+        $normalized = self::normalizePath($path);
+        if ($normalized === '' || $normalized === '/') {
+            return '';
+        }
+
+        return rtrim(strtr(base64_encode($normalized), '+/', '-_'), '=');
+    }
+
+    /**
+     * Decode a URL-safe Base64 string back to a path.
+     */
+    public static function decodePath(?string $hash): string
+    {
+        if (empty($hash) || $hash === 'root') {
+            return '/';
+        }
+
+        $decoded = base64_decode(strtr($hash, '-_', '+/'));
+        return $decoded ?: '/';
+    }
 }

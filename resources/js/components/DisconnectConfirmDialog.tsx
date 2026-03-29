@@ -1,6 +1,5 @@
 import { OctagonAlert, X } from 'lucide-react';
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -10,6 +9,7 @@ import {
     AlertDialogFooter,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 interface DisconnectConfirmDialogProps {
     open: boolean;

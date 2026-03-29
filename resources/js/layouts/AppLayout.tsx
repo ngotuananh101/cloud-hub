@@ -88,7 +88,7 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                 id: conn.id,
                 name: conn.name,
                 icon_url: conn.provider.icon_url,
-                route: null,
+                route: 'clouds.browse',
             })),
         },
         {
@@ -139,43 +139,70 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                 <ul className="space-y-0.5">
                                     {group.items.length > 0 ? (
                                         group.items.map((item: any) => {
-                                            const isActive = item.route
-                                                ? route().current(
-                                                      item.route + '*',
-                                                  )
-                                                : false;
+                                            const isActive =
+                                                item.route === 'clouds.browse'
+                                                    ? route().current(
+                                                          'clouds.browse',
+                                                          {
+                                                              connection:
+                                                                  item.id,
+                                                          },
+                                                      )
+                                                    : item.route
+                                                      ? route().current(
+                                                            item.route + '*',
+                                                          )
+                                                      : false;
 
                                             return (
                                                 <li key={item.name}>
                                                     {item.route ? (
-                                                        <Link
-                                                            href={route(
-                                                                item.route,
-                                                            )}
-                                                            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
-                                                                isActive
-                                                                    ? 'bg-[#c12222]/8 text-[#c12222]'
-                                                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                                            }`}
-                                                        >
-                                                            {item.icon ? (
-                                                                <item.icon className="h-4 w-4" />
-                                                            ) : (
-                                                                <img
-                                                                    src={
-                                                                        (
-                                                                            item as any
-                                                                        ).icon_url
-                                                                    }
-                                                                    className="h-4 w-4 rounded-sm"
-                                                                />
-                                                            )}
-                                                            {item.name}
-                                                        </Link>
+                                                    <Link
+                                                        href={
+                                                            item.route ===
+                                                            'clouds.browse'
+                                                                ? route(
+                                                                      item.route,
+                                                                      {
+                                                                          connection:
+                                                                              item.id,
+                                                                      },
+                                                                  )
+                                                                : route(
+                                                                      item.route,
+                                                                  )
+                                                        }
+                                                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                                            isActive
+                                                                ? 'bg-[#c12222]/8 text-[#c12222]'
+                                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                                        }`}
+                                                    >
+                                                        {item.icon ? (
+                                                            <item.icon className="h-4 w-4" />
+                                                        ) : (
+                                                            <img
+                                                                src={
+                                                                    (
+                                                                        item as any
+                                                                    ).icon_url
+                                                                }
+                                                                className="h-4 w-4 rounded-sm"
+                                                            />
+                                                        )}
+                                                        {item.name}
+                                                    </Link>
                                                     ) : (
                                                         <div className="group relative flex items-center justify-between">
-                                                            <span
-                                                                className={`flex flex-1 cursor-default items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                                            <Link
+                                                                href={route(
+                                                                    item.route,
+                                                                    {
+                                                                        connection:
+                                                                            item.id,
+                                                                    },
+                                                                )}
+                                                                className={`flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
                                                                     isActive
                                                                         ? 'bg-[#c12222]/8 text-[#c12222]'
                                                                         : 'text-slate-600 group-hover:bg-slate-50 group-hover:text-slate-900'
@@ -196,7 +223,7 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                                                 <span className="truncate">
                                                                     {item.name}
                                                                 </span>
-                                                            </span>
+                                                            </Link>
 
                                                             {group.label ===
                                                                 'CONNECTED STORAGE' && (
@@ -207,6 +234,7 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                                                     onClick={(
                                                                         e,
                                                                     ) => {
+                                                                        e.preventDefault();
                                                                         e.stopPropagation();
                                                                         setSelectedConnection(
                                                                             cloudConnections.find(
