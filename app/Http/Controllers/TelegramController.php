@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 class TelegramController extends Controller
 {
     protected string $baseUrl;
+
     protected string $token;
 
     public function __construct()
@@ -26,7 +27,7 @@ class TelegramController extends Controller
      */
     protected function getSessionId(): string
     {
-        return 'user_' . Auth::id();
+        return 'user_'.Auth::id();
     }
 
     /**
@@ -47,7 +48,8 @@ class TelegramController extends Controller
             ]);
 
             if ($response->failed()) {
-                Log::error('Telegram Request Code Error: ' . $response->body());
+                Log::error('Telegram Request Code Error: '.$response->body());
+
                 return response()->json([
                     'message' => $response->json('detail', 'Failed to request code from Telegram.'),
                 ], $response->status());
@@ -55,7 +57,8 @@ class TelegramController extends Controller
 
             return response()->json($response->json());
         } catch (\Exception $e) {
-            Log::error('Telegram Request Code Exception: ' . $e->getMessage());
+            Log::error('Telegram Request Code Exception: '.$e->getMessage());
+
             return response()->json(['message' => 'Connection to Telegram microservice failed.'], 500);
         }
     }
@@ -68,6 +71,7 @@ class TelegramController extends Controller
         $request->validate([
             'phone' => 'required|string',
             'code' => 'required|string',
+            'phone_code_hash' => 'nullable|string',
             'password' => 'nullable|string',
             'name' => 'required|string|max:255',
         ]);
@@ -81,12 +85,13 @@ class TelegramController extends Controller
             ])->post("{$this->baseUrl}/login", [
                 'phone' => $request->phone,
                 'code' => $request->code,
+                'phone_code_hash' => $request->phone_code_hash,
                 'password' => $request->password,
             ]);
 
             $result = $response->json();
 
-            if ($response->failed() || !($result['success'] ?? false)) {
+            if ($response->failed() || ! ($result['success'] ?? false)) {
                 return response()->json([
                     'message' => $result['message'] ?? 'Login failed. Please check your code.',
                     'detail' => $result['detail'] ?? '',
@@ -128,7 +133,8 @@ class TelegramController extends Controller
                 'message' => 'Telegram connected successfully!',
             ]);
         } catch (\Exception $e) {
-            Log::error('Telegram Login Exception: ' . $e->getMessage());
+            Log::error('Telegram Login Exception: '.$e->getMessage());
+
             return response()->json(['message' => 'An error occurred during Telegram login.'], 500);
         }
     }

@@ -58,6 +58,7 @@ export default function ConnectCloudModal({
     const [telegramData, setTelegramData] = useState({
         phone: '',
         code: '',
+        phone_code_hash: '',
         password: '',
     });
     const [telegramProcessing, setTelegramProcessing] = useState(false);
@@ -66,7 +67,7 @@ export default function ConnectCloudModal({
         if (!isOpen) {
             setSelectedProvider(null);
             setTelegramStep('phone');
-            setTelegramData({ phone: '', code: '', password: '' });
+            setTelegramData({ phone: '', code: '', phone_code_hash: '', password: '' });
             reset();
             clearErrors();
         }
@@ -133,11 +134,16 @@ export default function ConnectCloudModal({
         setTelegramProcessing(true);
 
         try {
-            await axios.post(route('telegram.request-code'), {
+            const response = await axios.post(route('telegram.request-code'), {
                 phone: telegramData.phone,
             });
 
             setTelegramStep('code');
+            setTelegramData((prev) => ({
+                ...prev,
+                phone_code_hash: response.data.phone_code_hash,
+            }));
+            
             toast.success('Login code sent to your Telegram account.');
         } catch (err: any) {
             toast.error(
@@ -161,6 +167,7 @@ export default function ConnectCloudModal({
             const response = await axios.post(route('telegram.login'), {
                 phone: telegramData.phone,
                 code: telegramData.code,
+                phone_code_hash: telegramData.phone_code_hash,
                 password: telegramData.password,
                 name: data.name,
             });

@@ -34,12 +34,13 @@ class TelegramStorageClient:
 
     async def send_code_request(self, session_id: str, phone: str):
         client = await self.get_client(session_id)
-        return await client.send_code_request(phone)
+        result = await client.send_code_request(phone)
+        return result.phone_code_hash if hasattr(result, 'phone_code_hash') else result
 
-    async def sign_in(self, session_id: str, phone: str, code: str, password: Optional[str] = None):
+    async def sign_in(self, session_id: str, phone: str, code: str, phone_code_hash: Optional[str] = None, password: Optional[str] = None):
         client = await self.get_client(session_id)
         try:
-            return await client.sign_in(phone, code, password=password)
+            return await client.sign_in(phone, code, password=password, phone_code_hash=phone_code_hash)
         except Exception as e:
             return str(e)
 

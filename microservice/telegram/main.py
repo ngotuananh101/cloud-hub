@@ -84,6 +84,7 @@ class RequestCodeModel(BaseModel):
 class LoginModel(BaseModel):
     phone: str
     code: str
+    phone_code_hash: Optional[str] = None
     password: Optional[str] = None
 
 
@@ -95,12 +96,12 @@ async def auth_status(x_session_id: str = Header(...)):
 @app.post("/request-code")
 async def request_code(data: RequestCodeModel, x_session_id: str = Header(...), token: str = Depends(verify_token)):
     print(f"Requesting code for phone: {data.phone}, Session: {x_session_id}")
-    await telegram_client.send_code_request(x_session_id, data.phone)
-    return {"message": "Code sent to Telegram"}
+    phone_code_hash = await telegram_client.send_code_request(x_session_id, data.phone)
+    return {"message": "Code sent to Telegram", "phone_code_hash": phone_code_hash}
 
 @app.post("/login")
 async def login(data: LoginModel, x_session_id: str = Header(...), token: str = Depends(verify_token)):
-    result = await telegram_client.sign_in(x_session_id, data.phone, data.code, data.password)
+    result = await telegram_client.sign_in(x_session_id, data.phone, data.code, data.phone_code_hash, data.password)
     is_auth = await telegram_client.is_user_authorized(x_session_id)
     if is_auth:
         await perform_sync(x_session_id, next(get_db()) if hasattr(get_db(), '__next__') else await anext(get_db()))
