@@ -190,9 +190,7 @@ export default function EditConnectionModal({
                                                     'key',
                                                     'uri',
                                                     'url',
-                                                    'path',
                                                     'id',
-                                                    'bucket',
                                                 ].some((keyword) =>
                                                     key
                                                         .toLowerCase()
