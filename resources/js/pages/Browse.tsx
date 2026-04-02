@@ -40,7 +40,8 @@ export default function Browse({
     error,
 }: PageProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
-    const [isNewFolderModalOpen, setIsNewFolderModalOpen] = React.useState(false);
+    const [isNewFolderModalOpen, setIsNewFolderModalOpen] =
+        React.useState(false);
     const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
 
     const filteredFiles = React.useMemo(() => {
@@ -82,39 +83,6 @@ export default function Browse({
                                 className="h-11 w-64 rounded-xl border-slate-100 bg-slate-50 pl-10 text-[13px] ring-[#c12222] focus:border-[#c12222] focus:ring-1"
                             />
                         </div>
-
-                        <div className="flex items-center rounded-xl border border-slate-100 bg-white p-1 shadow-sm">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-slate-400 hover:text-[#c12222]"
-                            >
-                                <Move className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-slate-400 hover:text-[#c12222]"
-                            >
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-slate-400 hover:text-[#c12222]"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <div className="mx-1 h-4 w-px bg-slate-100" />
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-slate-400 hover:text-[#c12222]"
-                            >
-                                <Share2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-
                         <Button
                             onClick={() => setIsNewFolderModalOpen(true)}
                             className="h-11 gap-2 rounded-xl border border-slate-200 bg-white px-5 text-[13px] font-bold text-slate-700 shadow-sm hover:bg-slate-50"
