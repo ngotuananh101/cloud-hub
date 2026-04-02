@@ -414,7 +414,10 @@ export default function UploadModal({
              * Biến DialogContent thành flex column có chiều cao tối đa,
              * cho phép phần body scroll thay vì đẩy dialog ra ngoài màn hình.
              */}
-            <DialogContent className="flex max-h-[90vh] flex-col gap-0 rounded-2xl border-none p-0 shadow-2xl sm:max-w-[520px]">
+            <DialogContent 
+                className="flex max-h-[90vh] flex-col gap-0 rounded-2xl border-none p-0 shadow-2xl sm:max-w-[640px]"
+                onInteractOutside={(e) => e.preventDefault()}
+            >
                 {/* Header — cố định, không scroll */}
                 <DialogHeader className="shrink-0 border-b border-slate-100 px-6 pt-6 pb-4">
                     <DialogTitle className="text-base font-bold tracking-tight text-slate-800">
