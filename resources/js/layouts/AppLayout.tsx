@@ -1,4 +1,5 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
 import {
     Bell,
     CirclePlus,
@@ -11,6 +12,7 @@ import {
     Upload,
 } from 'lucide-react';
 import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 import { route } from 'ziggy-js';
 import ConnectCloudModal from '@/components/ConnectCloudModal';
 import EditConnectionModal from '@/components/EditConnectionModal';
@@ -19,12 +21,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
+interface BroadcastPayload {
+    upload_id: string;
+    success: boolean;
+    filename: string;
+    error?: string;
+}
+
 interface AppLayoutProps {
     title: string;
     children: React.ReactNode;
 }
 
 interface AuthUser {
+    id: number;
     name: string;
     email: string;
     avatar: string;
@@ -70,6 +80,22 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                 handleOpenModal,
             );
     }, []);
+
+    // ----------------------------------------------------------------
+    // Global Global Background Upload Listener
+    // ----------------------------------------------------------------
+    useEcho(`uploads.${user.id}`, '.upload.completed', (payload: BroadcastPayload) => {
+        if (payload.success) {
+            toast.success(`"${payload.filename}" uploaded successfully!`, {
+                description: 'The file is now available in your cloud storage.',
+            });
+            router.reload({ only: ['files'] });
+        } else {
+            toast.error(`Failed to upload "${payload.filename}"`, {
+                description: payload.error ?? 'An unknown error occurred.',
+            });
+        }
+    });
 
     const sidebarNav = [
         {

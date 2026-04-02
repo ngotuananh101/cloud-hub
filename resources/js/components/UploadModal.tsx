@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 import {
     CheckCircle2,
@@ -10,7 +10,6 @@ import {
     XCircle,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -136,13 +135,6 @@ export default function UploadModal({
                             : f,
                     ),
                 );
-
-                toast.success(`"${payload.filename}" uploaded successfully!`, {
-                    description:
-                        'The file is now available in your cloud storage.',
-                });
-
-                router.reload({ only: ['files'] });
             } else {
                 setFiles((prev) =>
                     prev.map((f) =>
@@ -156,10 +148,6 @@ export default function UploadModal({
                             : f,
                     ),
                 );
-
-                toast.error(`Failed to upload "${payload.filename}"`, {
-                    description: payload.error ?? 'An unknown error occurred.',
-                });
             }
 
             // Clean up the mapping entry
