@@ -1,14 +1,23 @@
-import { Link } from '@inertiajs/react';
-import { MoreHorizontal, Share2, Copy, Move, Trash2, Info } from 'lucide-react';
-import React from 'react';
+import { Link, router } from '@inertiajs/react';
+import { MoreHorizontal, Share2, Copy, Move, Trash2, Info, Loader2, OctagonAlert, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { toast } from 'sonner';
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import FileIcon from './FileIcon';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import FileIcon from './FileIcon';
 
 interface FileItem {
     id: string;
@@ -28,6 +37,30 @@ interface FileTableProps {
 }
 
 export default function FileTable({ connectionId, files }: FileTableProps) {
+    const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = () => {
+        if (!fileToDelete) {
+            return;
+        }
+        
+        setIsDeleting(true);
+        // @ts-expect-error - Ziggy route global
+        router.delete(route('clouds.files.destroy', { connection: connectionId }), {
+            data: { path: fileToDelete.path, type: fileToDelete.type },
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(`"${fileToDelete.name}" deleted successfully.`);
+                setFileToDelete(null);
+            },
+            onError: () => {
+                toast.error(`Failed to delete "${fileToDelete.name}".`);
+            },
+            onFinish: () => setIsDeleting(false),
+        });
+    };
+
     const formatSize = (bytes: number | null) => {
         if (bytes === null) {
             return '--';
@@ -194,6 +227,7 @@ export default function FileTable({ connectionId, files }: FileTableProps) {
                                         <Button
                                             variant="ghost"
                                             size="icon"
+                                            onClick={() => setFileToDelete(file)}
                                             className="h-8 w-8 text-slate-400 hover:text-[#c12222]"
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -221,7 +255,10 @@ export default function FileTable({ connectionId, files }: FileTableProps) {
                                                     <Share2 className="h-4 w-4" />{' '}
                                                     Share
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="gap-2 rounded-lg py-2.5 text-[13px] text-red-600 focus:text-red-600">
+                                                <DropdownMenuItem 
+                                                    onClick={() => setFileToDelete(file)}
+                                                    className="gap-2 rounded-lg py-2.5 text-[13px] text-red-600 focus:text-red-600"
+                                                >
                                                     <Trash2 className="h-4 w-4" />{' '}
                                                     Delete
                                                 </DropdownMenuItem>
@@ -234,6 +271,62 @@ export default function FileTable({ connectionId, files }: FileTableProps) {
                     )}
                 </tbody>
             </table>
+
+            <AlertDialog open={!!fileToDelete} onOpenChange={(open) => !open && !isDeleting && setFileToDelete(null)}>
+                <AlertDialogContent className="max-w-[400px] gap-0 border-0 p-0 sm:rounded-[24px]">
+                    <div className="relative p-6">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 h-8 w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                            onClick={() => !isDeleting && setFileToDelete(null)}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+
+                        <div className="flex flex-col items-center gap-4 pt-4">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-red-50">
+                                <OctagonAlert className="h-8 w-8 text-[#c12222]" />
+                            </div>
+
+                            <div className="space-y-2 text-center">
+                                <AlertDialogTitle className="text-[20px] font-bold text-slate-900">
+                                    Delete {fileToDelete?.type === 'dir' ? 'Folder' : 'File'}?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-[14px] leading-relaxed text-slate-500">
+                                    Are you sure you want to delete <strong>"{fileToDelete?.name}"</strong>? This action cannot be undone and will permanently remove it from your cloud storage.
+                                </AlertDialogDescription>
+                            </div>
+                        </div>
+                    </div>
+
+                    <AlertDialogFooter className="flex flex-row items-center gap-3 border-t border-slate-50 bg-slate-50/30 p-6">
+                        <AlertDialogCancel asChild>
+                            <Button
+                                variant="outline"
+                                disabled={isDeleting}
+                                className="h-12 flex-1 rounded-xl border-slate-200 text-[14px] font-bold text-slate-600 hover:bg-slate-50 mt-0"
+                            >
+                                Cancel
+                            </Button>
+                        </AlertDialogCancel>
+                        <Button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="h-12 flex-1 rounded-xl bg-[#c12222] text-[14px] font-bold text-white shadow-lg shadow-red-500/10 hover:bg-[#a31c1c] mt-0"
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                'Delete'
+                            )}
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

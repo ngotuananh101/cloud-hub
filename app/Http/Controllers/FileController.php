@@ -166,6 +166,47 @@ class FileController extends Controller
     }
 
     /**
+     * Delete a file or folder.
+     */
+    public function destroy(Request $request, CloudConnection $connection)
+    {
+        if ($connection->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'path' => 'required|string',
+            'type' => 'required|in:file,dir',
+        ]);
+
+        $path = $request->input('path');
+        $type = $request->input('type');
+
+        // Path is plain path like 'folder/file.txt' or 'folder'
+        $parentPath = dirname($path);
+        if ($parentPath === '.' || $parentPath === '\\') {
+            $parentPath = '/';
+        }
+
+        try {
+            $disk = $this->getDisk($connection);
+            
+            if ($type === 'dir') {
+                $disk->deleteDirectory($path);
+            } else {
+                $disk->delete($path);
+            }
+
+            // Invalidate cache for the parent directory (where the item was deleted)
+            CloudHelper::clearCloudCache($connection, $parentPath);
+
+            return back()->with('success', 'Item deleted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete item: '.$e->getMessage());
+        }
+    }
+
+    /**
      * Handle chunked file upload.
      *
      * Expects multipart form fields:
