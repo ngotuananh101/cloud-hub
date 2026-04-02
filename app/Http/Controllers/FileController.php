@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\CloudHelper;
+use App\Jobs\ProcessChunkUpload;
 use App\Models\CloudConnection;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -208,9 +208,9 @@ class FileController extends Controller
         // Save the chunk file
         $request->file('file')->move($chunkDir, "chunk_{$chunkIndex}");
 
-        // If this is the last chunk, assemble and push to cloud
+        // If this is the last chunk, dispatch background job
         if ($chunkIndex + 1 === $totalChunks) {
-            // Verify all chunks are present
+            // Verify all chunks are present before dispatching
             for ($i = 0; $i < $totalChunks; $i++) {
                 if (! file_exists("{$chunkDir}/chunk_{$i}")) {
                     return response()->json([
@@ -219,35 +219,21 @@ class FileController extends Controller
                 }
             }
 
-            try {
-                $assembledPath = $this->assembleChunks($chunkDir, $totalChunks, $filename);
+            ProcessChunkUpload::dispatch(
+                userId:      Auth::id(),
+                connectionId: $connection->id,
+                uploadId:    $uploadId,
+                chunkDir:    $chunkDir,
+                totalChunks: $totalChunks,
+                filename:    $filename,
+                parentPath:  $parentPath,
+            );
 
-                $disk       = $this->getDisk($connection);
-                $remotePath = $parentPath === '/'
-                    ? $filename
-                    : rtrim($parentPath, '/').'/'.$filename;
-
-                // Stream the assembled file to cloud storage
-                $stream = fopen($assembledPath, 'rb');
-                $disk->writeStream($remotePath, $stream);
-
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-
-                // Clean up
-                unlink($assembledPath);
-                $this->cleanupChunkDir($chunkDir);
-
-                // Invalidate directory cache so new file shows up
-                CloudHelper::clearCloudCache($connection, $parentPath);
-
-                return response()->json(['message' => "'{$filename}' uploaded successfully."]);
-            } catch (\Exception $e) {
-                $this->cleanupChunkDir($chunkDir);
-
-                return response()->json(['error' => $e->getMessage()], 500);
-            }
+            return response()->json([
+                'message'   => "'{$filename}' queued for processing.",
+                'upload_id' => $uploadId,
+                'queued'    => true,
+            ]);
         }
 
         return response()->json([

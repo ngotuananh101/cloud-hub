@@ -155,7 +155,7 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
                                                       : false;
 
                                             return (
-                                                <li key={item.name}>
+                                                <li key={item.id ? `conn-${item.id}` : item.name}>
                                                     <div className="group relative flex items-center justify-between">
                                                         <Link
                                                             href={

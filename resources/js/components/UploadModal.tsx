@@ -1,6 +1,16 @@
-import { router } from '@inertiajs/react';
-import { CheckCircle2, File, Loader2, Upload, X, XCircle } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
+import {
+    CheckCircle2,
+    Clock,
+    File,
+    Loader2,
+    Upload,
+    X,
+    XCircle,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -9,12 +19,19 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import type { Auth } from '@/types/auth';
 
 // -------------------------------------------------------------------
 // Types
 // -------------------------------------------------------------------
 
-type FileStatus = 'queued' | 'uploading' | 'done' | 'error' | 'cancelled';
+type FileStatus =
+    | 'queued'
+    | 'uploading'
+    | 'processing'
+    | 'done'
+    | 'error'
+    | 'cancelled';
 
 interface UploadFile {
     id: string;
@@ -30,6 +47,13 @@ interface UploadModalProps {
     onClose: () => void;
     connectionId: number;
     currentHash: string | null;
+}
+
+interface BroadcastPayload {
+    upload_id: string;
+    success: boolean;
+    filename: string;
+    error?: string;
 }
 
 // -------------------------------------------------------------------
@@ -75,10 +99,80 @@ export default function UploadModal({
     connectionId,
     currentHash,
 }: UploadModalProps) {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const userId = auth.user.id;
+
     const [files, setFiles] = useState<UploadFile[]>([]);
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Map uploadId → file.id so the broadcast handler can find the right row
+    const uploadIdMapRef = useRef<Record<string, string>>({});
+
+    // ----------------------------------------------------------------
+    // Echo: listen for job completion events from Reverb
+    // ----------------------------------------------------------------
+
+    useEcho(
+        `uploads.${userId}`,
+        '.upload.completed',
+        (payload: BroadcastPayload) => {
+            const fileId = uploadIdMapRef.current[payload.upload_id];
+
+            if (!fileId) {
+                return;
+            }
+
+            if (payload.success) {
+                setFiles((prev) =>
+                    prev.map((f) =>
+                        f.id === fileId
+                            ? {
+                                  ...f,
+                                  status: 'done' as FileStatus,
+                                  progress: 100,
+                              }
+                            : f,
+                    ),
+                );
+
+                toast.success(`"${payload.filename}" uploaded successfully!`, {
+                    description:
+                        'The file is now available in your cloud storage.',
+                });
+
+                router.reload({ only: ['files'] });
+            } else {
+                setFiles((prev) =>
+                    prev.map((f) =>
+                        f.id === fileId
+                            ? {
+                                  ...f,
+                                  status: 'error' as FileStatus,
+                                  errorMessage:
+                                      payload.error ?? 'Unknown error',
+                              }
+                            : f,
+                    ),
+                );
+
+                toast.error(`Failed to upload "${payload.filename}"`, {
+                    description: payload.error ?? 'An unknown error occurred.',
+                });
+            }
+
+            // Clean up the mapping entry
+            delete uploadIdMapRef.current[payload.upload_id];
+        },
+    );
+
+    // Reset on modal close
+    useEffect(() => {
+        if (!isOpen) {
+            uploadIdMapRef.current = {};
+        }
+    }, [isOpen]);
 
     // ----------------------------------------------------------------
     // File management
@@ -158,6 +252,9 @@ export default function UploadModal({
         const uploadId = generateId();
         const abortController = new AbortController();
 
+        // Register this upload's ID → file.id mapping for the broadcast handler
+        uploadIdMapRef.current[uploadId] = uploadFile.id;
+
         setFiles((prev) =>
             prev.map((f) =>
                 f.id === uploadFile.id
@@ -221,10 +318,16 @@ export default function UploadModal({
                 );
             }
 
+            // Last chunk received — backend will dispatch the job
+            // Mark as 'processing' (waiting for Reverb event)
             setFiles((prev) =>
                 prev.map((f) =>
                     f.id === uploadFile.id
-                        ? { ...f, status: 'done' as FileStatus, progress: 100 }
+                        ? {
+                              ...f,
+                              status: 'processing' as FileStatus,
+                              progress: 100,
+                          }
                         : f,
                 ),
             );
@@ -263,8 +366,8 @@ export default function UploadModal({
             await uploadSingleFile(uploadFile);
         }
 
+        // Don't reload here — let the Reverb broadcast trigger reload per file
         setIsUploading(false);
-        router.reload({ only: ['files'] });
     };
 
     const handleCancelAll = () => {
@@ -306,6 +409,9 @@ export default function UploadModal({
     // ----------------------------------------------------------------
 
     const queuedCount = files.filter((f) => f.status === 'queued').length;
+    const processingCount = files.filter(
+        (f) => f.status === 'processing',
+    ).length;
     const doneCount = files.filter((f) => f.status === 'done').length;
     const allDone = files.length > 0 && doneCount === files.length;
 
@@ -450,14 +556,25 @@ export default function UploadModal({
                     ) : (
                         <Button
                             type="button"
-                            disabled={queuedCount === 0}
+                            disabled={
+                                queuedCount === 0 && processingCount === 0
+                            }
                             onClick={handleUpload}
                             className="h-10 rounded-xl bg-[#c12222] px-6 text-[13px] font-bold text-white shadow-md shadow-red-900/10 transition-all hover:bg-[#a31c1c] active:scale-[0.98] disabled:scale-100 disabled:opacity-50"
                         >
-                            <Upload className="mr-2 h-4 w-4" />
-                            {allDone
-                                ? 'Done'
-                                : `Upload${queuedCount > 0 ? ` (${queuedCount})` : ''}`}
+                            {processingCount > 0 ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    {`Processing (${processingCount})`}
+                                </>
+                            ) : (
+                                <>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    {allDone
+                                        ? 'Done'
+                                        : `Upload${queuedCount > 0 ? ` (${queuedCount})` : ''}`}
+                                </>
+                            )}
                         </Button>
                     )}
                 </div>
@@ -490,6 +607,13 @@ function FileRow({ uploadFile, onRemove, onCancel, onRetry }: FileRowProps) {
                         {progress}%
                     </span>
                 );
+            case 'processing':
+                return (
+                    <span className="flex items-center gap-1 font-semibold text-amber-600">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Processing…
+                    </span>
+                );
             case 'done':
                 return (
                     <span className="font-semibold text-emerald-600">Done</span>
@@ -512,6 +636,10 @@ function FileRow({ uploadFile, onRemove, onCancel, onRetry }: FileRowProps) {
 
         if (status === 'error') {
             return <XCircle className="h-3.5 w-3.5 text-red-500" />;
+        }
+
+        if (status === 'processing') {
+            return <Clock className="h-3.5 w-3.5 text-amber-500" />;
         }
 
         return null;
@@ -544,7 +672,8 @@ function FileRow({ uploadFile, onRemove, onCancel, onRetry }: FileRowProps) {
             );
         }
 
-        if (status !== 'done') {
+        // processing and done: no action available
+        if (status === 'queued' || status === 'cancelled') {
             return (
                 <button
                     type="button"
@@ -610,8 +739,10 @@ function FileRow({ uploadFile, onRemove, onCancel, onRetry }: FileRowProps) {
                         )}
                     </div>
 
-                    {/* Progress bar */}
-                    {(status === 'uploading' || status === 'done') && (
+                    {/* Progress bar — show while uploading, processing, or done */}
+                    {(status === 'uploading' ||
+                        status === 'processing' ||
+                        status === 'done') && (
                         <div className="mt-2">
                             <Progress
                                 value={progress}
@@ -619,7 +750,9 @@ function FileRow({ uploadFile, onRemove, onCancel, onRetry }: FileRowProps) {
                                     'h-1',
                                     status === 'done'
                                         ? '*:data-[slot=progress-indicator]:bg-emerald-500'
-                                        : '*:data-[slot=progress-indicator]:bg-[#c12222]',
+                                        : status === 'processing'
+                                          ? '*:data-[slot=progress-indicator]:bg-amber-500'
+                                          : '*:data-[slot=progress-indicator]:bg-[#c12222]',
                                 ].join(' ')}
                             />
                         </div>
