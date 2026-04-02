@@ -60,6 +60,7 @@ class FileController extends Controller
                     if ($a['type'] === $b['type']) {
                         return strcasecmp($a['name'], $b['name']);
                     }
+
                     return $a['type'] === 'dir' ? -1 : 1;
                 });
 
@@ -102,6 +103,7 @@ class FileController extends Controller
     {
         try {
             $timestamp = $disk->lastModified($path);
+
             return Carbon::createFromTimestamp($timestamp)->toIso8601String();
         } catch (\Throwable $e) {
             return null;
@@ -112,14 +114,14 @@ class FileController extends Controller
     {
         $path = CloudHelper::normalizePath($path);
         $parts = array_filter(explode('/', $path));
-        
+
         $breadcrumbs = [
-            ['name' => 'Root', 'hash' => null]
+            ['name' => 'Root', 'hash' => null],
         ];
 
         $current = '';
         foreach ($parts as $part) {
-            $current = $current === '' ? $part : $current . '/' . $part;
+            $current = $current === '' ? $part : $current.'/'.$part;
             $breadcrumbs[] = [
                 'name' => $part,
                 'hash' => CloudHelper::encodePath($current),
@@ -128,6 +130,7 @@ class FileController extends Controller
 
         return $breadcrumbs;
     }
+
     /**
      * Create a new folder in the specified path.
      */
@@ -144,20 +147,20 @@ class FileController extends Controller
 
         $parentPath = CloudHelper::decodePath($request->input('path'));
         $folderName = $request->input('name');
-        
+
         // Clean up the folder name and join with parent path
-        $fullPath = $parentPath === '/' ? $folderName : rtrim($parentPath, '/') . '/' . $folderName;
+        $fullPath = $parentPath === '/' ? $folderName : rtrim($parentPath, '/').'/'.$folderName;
 
         try {
             $disk = $this->getDisk($connection);
             $disk->makeDirectory($fullPath);
-            
+
             // Clear cache for the parent path so the new folder shows up
             CloudHelper::clearCloudCache($connection, $parentPath);
 
             return back()->with('success', "Folder '{$folderName}' created successfully.");
         } catch (\Exception $e) {
-            return back()->with('error', "Failed to create folder: " . $e->getMessage());
+            return back()->with('error', 'Failed to create folder: '.$e->getMessage());
         }
     }
 
