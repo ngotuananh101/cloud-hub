@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/cloud-connections/{cloudConnection}', [CloudConnectionController::class, 'destroy'])->name('cloud-connections.destroy');
     Route::get('/clouds/{connection}/{hash?}', [FileController::class, 'index'])->name('clouds.browse');
     Route::post('/clouds/{connection}/folders', [FileController::class, 'storeFolder'])->name('clouds.folders.store');
+    Route::post('/clouds/{connection}/upload', [FileController::class, 'upload'])->name('clouds.upload');
 
     // OAuth & Telegram Auth Routes
     Route::get('/oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');

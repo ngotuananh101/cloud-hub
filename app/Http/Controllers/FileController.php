@@ -7,6 +7,7 @@ use App\Models\CloudConnection;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -162,6 +163,136 @@ class FileController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create folder: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Handle chunked file upload.
+     *
+     * Expects multipart form fields:
+     *   - file        : the chunk blob
+     *   - upload_id   : a client-generated UUID per upload session
+     *   - chunk_index : 0-based index of this chunk
+     *   - total_chunks: total number of chunks for the file
+     *   - filename    : original file name
+     *   - path        : encoded parent path hash
+     */
+    public function upload(Request $request, CloudConnection $connection)
+    {
+        if ($connection->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'file'         => 'required|file',
+            'upload_id'    => 'required|string|max:64',
+            'chunk_index'  => 'required|integer|min:0',
+            'total_chunks' => 'required|integer|min:1',
+            'filename'     => 'required|string|max:255',
+            'path'         => 'nullable|string',
+        ]);
+
+        $uploadId    = preg_replace('/[^a-zA-Z0-9_-]/', '', $request->input('upload_id'));
+        $chunkIndex  = (int) $request->input('chunk_index');
+        $totalChunks = (int) $request->input('total_chunks');
+        $filename    = basename($request->input('filename'));
+        $parentPath  = CloudHelper::decodePath($request->input('path'));
+
+        // Store chunk in local temp directory
+        $chunkDir  = storage_path("app/chunks/{$uploadId}");
+        $chunkPath = "{$chunkDir}/chunk_{$chunkIndex}";
+
+        if (! is_dir($chunkDir)) {
+            mkdir($chunkDir, 0755, true);
+        }
+
+        // Save the chunk file
+        $request->file('file')->move($chunkDir, "chunk_{$chunkIndex}");
+
+        // If this is the last chunk, assemble and push to cloud
+        if ($chunkIndex + 1 === $totalChunks) {
+            // Verify all chunks are present
+            for ($i = 0; $i < $totalChunks; $i++) {
+                if (! file_exists("{$chunkDir}/chunk_{$i}")) {
+                    return response()->json([
+                        'error' => "Missing chunk {$i}, please retry.",
+                    ], 422);
+                }
+            }
+
+            try {
+                $assembledPath = $this->assembleChunks($chunkDir, $totalChunks, $filename);
+
+                $disk       = $this->getDisk($connection);
+                $remotePath = $parentPath === '/'
+                    ? $filename
+                    : rtrim($parentPath, '/').'/'.$filename;
+
+                // Stream the assembled file to cloud storage
+                $stream = fopen($assembledPath, 'rb');
+                $disk->writeStream($remotePath, $stream);
+
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+
+                // Clean up
+                unlink($assembledPath);
+                $this->cleanupChunkDir($chunkDir);
+
+                // Invalidate directory cache so new file shows up
+                CloudHelper::clearCloudCache($connection, $parentPath);
+
+                return response()->json(['message' => "'{$filename}' uploaded successfully."]);
+            } catch (\Exception $e) {
+                $this->cleanupChunkDir($chunkDir);
+
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+
+        return response()->json([
+            'message' => "Chunk {$chunkIndex} received.",
+            'received' => $chunkIndex + 1,
+            'total'    => $totalChunks,
+        ]);
+    }
+
+    /**
+     * Concatenate all chunk files into a single assembled file.
+     */
+    private function assembleChunks(string $chunkDir, int $totalChunks, string $filename): string
+    {
+        $assembledPath = "{$chunkDir}/{$filename}";
+        $out = fopen($assembledPath, 'wb');
+
+        for ($i = 0; $i < $totalChunks; $i++) {
+            $chunkPath = "{$chunkDir}/chunk_{$i}";
+            $in = fopen($chunkPath, 'rb');
+            stream_copy_to_stream($in, $out);
+            fclose($in);
+        }
+
+        fclose($out);
+
+        return $assembledPath;
+    }
+
+    /**
+     * Remove the temporary chunk directory and its contents.
+     */
+    private function cleanupChunkDir(string $dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob("{$dir}/*") as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+
+        rmdir($dir);
     }
 
     /**

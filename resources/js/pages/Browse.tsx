@@ -6,6 +6,7 @@ import FileTable from '@/components/FileTable';
 import NewFolderModal from '@/components/NewFolderModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import UploadModal from '@/components/UploadModal';
 import AppLayout from '@/layouts/AppLayout';
 
 interface Provider {
@@ -39,8 +40,8 @@ export default function Browse({
     error,
 }: PageProps) {
     const [searchQuery, setSearchQuery] = React.useState('');
-    const [isNewFolderModalOpen, setIsNewFolderModalOpen] =
-        React.useState(false);
+    const [isNewFolderModalOpen, setIsNewFolderModalOpen] = React.useState(false);
+    const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
 
     const filteredFiles = React.useMemo(() => {
         if (!searchQuery.trim()) {
@@ -122,7 +123,10 @@ export default function Browse({
                             New Folder
                         </Button>
 
-                        <Button className="h-11 gap-2 rounded-xl bg-[#c12222] px-6 text-[13px] font-bold text-white shadow-md hover:bg-[#a31c1c] active:scale-[0.98]">
+                        <Button
+                            onClick={() => setIsUploadModalOpen(true)}
+                            className="h-11 gap-2 rounded-xl bg-[#c12222] px-6 text-[13px] font-bold text-white shadow-md hover:bg-[#a31c1c] active:scale-[0.98]"
+                        >
                             <Upload className="h-4 w-4" />
                             Upload
                         </Button>
@@ -148,6 +152,13 @@ export default function Browse({
             <NewFolderModal
                 isOpen={isNewFolderModalOpen}
                 onClose={() => setIsNewFolderModalOpen(false)}
+                connectionId={connection.id}
+                currentHash={currentHash}
+            />
+
+            <UploadModal
+                isOpen={isUploadModalOpen}
+                onClose={() => setIsUploadModalOpen(false)}
                 connectionId={connection.id}
                 currentHash={currentHash}
             />
