@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\CloudHelper;
+use App\Helpers\DeviceHelper;
 use App\Jobs\ProcessChunkUpload;
 use App\Models\CloudConnection;
 use Carbon\Carbon;
@@ -161,6 +162,19 @@ class FileController extends Controller
             // Clear cache for the parent path so the new folder shows up
             CloudHelper::clearCloudCache($connection, $parentPath);
 
+            activity('file_operation')
+                ->causedBy(Auth::user())
+                ->performedOn($connection)
+                ->withProperties(array_merge(
+                    DeviceHelper::properties($request),
+                    [
+                        'action' => 'create_folder',
+                        'path' => $fullPath,
+                        'provider' => $connection->provider?->name ?? 'Unknown',
+                    ]
+                ))
+                ->log("Created folder '{$folderName}' in '{$connection->name}'");
+
             return back()->with('success', "Folder '{$folderName}' created successfully.");
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to create folder: '.$e->getMessage());
@@ -202,6 +216,20 @@ class FileController extends Controller
             // Invalidate cache for the parent directory (where the item was deleted)
             CloudHelper::clearCloudCache($connection, $parentPath);
 
+            activity('file_operation')
+                ->causedBy(Auth::user())
+                ->performedOn($connection)
+                ->withProperties(array_merge(
+                    DeviceHelper::properties($request),
+                    [
+                        'action' => 'delete',
+                        'type' => $type,
+                        'path' => $path,
+                        'provider' => $connection->provider?->name ?? 'Unknown',
+                    ]
+                ))
+                ->log("Deleted " . ($type === 'dir' ? 'folder' : 'file') . " '" . basename($path) . "' from '{$connection->name}'");
+
             return back()->with('success', 'Item deleted successfully.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to delete item: '.$e->getMessage());
@@ -228,6 +256,20 @@ class FileController extends Controller
             try {
                 $url = $disk->temporaryUrl($path, now()->addHours(1));
 
+                activity('file_operation')
+                    ->causedBy(Auth::user())
+                    ->performedOn($connection)
+                    ->withProperties(array_merge(
+                        DeviceHelper::properties(request()),
+                        [
+                            'action' => 'download',
+                            'path' => $path,
+                            'provider' => $connection->provider?->name ?? 'Unknown',
+                            'download_type' => 'direct_link',
+                        ]
+                    ))
+                    ->log("Downloaded file '{$fileName}' from '{$connection->name}'");
+
                 return redirect()->away($url);
             } catch (\Throwable $t) {
                 // Ignore and fallback to proxy via server
@@ -236,6 +278,20 @@ class FileController extends Controller
 
             // Fallback: proxy download
             if ($disk->exists($path)) {
+                activity('file_operation')
+                    ->causedBy(Auth::user())
+                    ->performedOn($connection)
+                    ->withProperties(array_merge(
+                        DeviceHelper::properties(request()),
+                        [
+                            'action' => 'download',
+                            'path' => $path,
+                            'provider' => $connection->provider?->name ?? 'Unknown',
+                            'download_type' => 'proxy',
+                        ]
+                    ))
+                    ->log("Downloaded file '{$fileName}' from '{$connection->name}'");
+
                 return $disk->download($path, $fileName);
             }
 
