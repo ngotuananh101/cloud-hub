@@ -239,10 +239,11 @@ class CloudStorageServiceProvider extends ServiceProvider
                 )
             );
 
-            return new FilesystemAdapter(
+            return new \Illuminate\Filesystem\AwsS3V3Adapter(
                 new Filesystem($adapter, $config),
                 $adapter,
-                $config
+                $config,
+                $client
             );
         });
 

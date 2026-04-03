@@ -214,4 +214,19 @@ class OneDriveAdapter implements FilesystemAdapter
             throw UnableToReadFile::fromLocation($path, $e->getMessage(), $e);
         }
     }
+
+    public function temporaryUrl(string $path, \DateTimeInterface|string $expiration, array $options = []): string
+    {
+        try {
+            $metadata = $this->client->getMetadata($this->prefixer->prefixPath($path));
+
+            if (isset($metadata['@microsoft.graph.downloadUrl'])) {
+                return $metadata['@microsoft.graph.downloadUrl'];
+            }
+
+            throw new \RuntimeException('OneDrive did not return a download URL.');
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Unable to generate temporary URL: ' . $e->getMessage(), 0, $e);
+        }
+    }
 }

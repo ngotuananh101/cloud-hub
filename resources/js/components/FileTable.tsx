@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { MoreHorizontal, Share2, Copy, Move, Trash2, Info, Loader2, OctagonAlert, X } from 'lucide-react';
+import { MoreHorizontal, Share2, Copy, Move, Trash2, Info, Loader2, OctagonAlert, X, Download } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -217,6 +217,21 @@ export default function FileTable({ connectionId, files }: FileTableProps) {
                                 </td>
                                 <td className="px-3 py-2 text-right">
                                     <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                        {file.type !== 'dir' && (
+                                            <a
+                                                // @ts-expect-error - Ziggy route global
+                                                href={route('clouds.files.download', {
+                                                    connection: connectionId,
+                                                    hash: file.hash,
+                                                })}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                title="Download"
+                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100/50 hover:text-[#c12222]"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                            </a>
+                                        )}
                                         <Button
                                             variant="ghost"
                                             size="icon"

@@ -6,8 +6,10 @@ use App\Helpers\CloudHelper;
 use App\Jobs\ProcessChunkUpload;
 use App\Models\CloudConnection;
 use Carbon\Carbon;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -47,7 +49,7 @@ class FileController extends Controller
                         'id' => md5($itemPath),
                         'name' => $name,
                         'path' => $itemPath,
-                        'hash' => $isDir ? CloudHelper::encodePath($itemPath) : null,
+                        'hash' => CloudHelper::encodePath($itemPath),
                         'type' => $isDir ? 'dir' : 'file',
                         'mime_type' => $mimeType ?? ($isDir ? null : $this->getMimeType($itemPath, $disk)),
                         'size' => $size ?? ($isDir ? null : $this->getFileSize($itemPath, $disk)),
@@ -190,7 +192,7 @@ class FileController extends Controller
 
         try {
             $disk = $this->getDisk($connection);
-            
+
             if ($type === 'dir') {
                 $disk->deleteDirectory($path);
             } else {
@@ -203,6 +205,43 @@ class FileController extends Controller
             return back()->with('success', 'Item deleted successfully.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to delete item: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Download a file: tries to get direct link (temporaryUrl), otherwise proxies via server.
+     */
+    public function download(CloudConnection $connection, string $hash)
+    {
+        if ($connection->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $path = CloudHelper::decodePath($hash);
+        $fileName = basename($path);
+
+        try {
+            /** @var FilesystemAdapter $disk */
+            $disk = $this->getDisk($connection);
+
+            // Try to see if adapter supports temporaryUrl (direct link)
+            try {
+                $url = $disk->temporaryUrl($path, now()->addHours(1));
+
+                return redirect()->away($url);
+            } catch (\Throwable $t) {
+                // Ignore and fallback to proxy via server
+                Log::warning('Failed to generate temporary URL: '.$t->getMessage());
+            }
+
+            // Fallback: proxy download
+            if ($disk->exists($path)) {
+                return $disk->download($path, $fileName);
+            }
+
+            return back()->with('error', 'File not found on storage.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to generate download: '.$e->getMessage());
         }
     }
 
@@ -224,22 +263,22 @@ class FileController extends Controller
         }
 
         $request->validate([
-            'file'         => 'required|file',
-            'upload_id'    => 'required|string|max:64',
-            'chunk_index'  => 'required|integer|min:0',
+            'file' => 'required|file',
+            'upload_id' => 'required|string|max:64',
+            'chunk_index' => 'required|integer|min:0',
             'total_chunks' => 'required|integer|min:1',
-            'filename'     => 'required|string|max:255',
-            'path'         => 'nullable|string',
+            'filename' => 'required|string|max:255',
+            'path' => 'nullable|string',
         ]);
 
-        $uploadId    = preg_replace('/[^a-zA-Z0-9_-]/', '', $request->input('upload_id'));
-        $chunkIndex  = (int) $request->input('chunk_index');
+        $uploadId = preg_replace('/[^a-zA-Z0-9_-]/', '', $request->input('upload_id'));
+        $chunkIndex = (int) $request->input('chunk_index');
         $totalChunks = (int) $request->input('total_chunks');
-        $filename    = basename($request->input('filename'));
-        $parentPath  = CloudHelper::decodePath($request->input('path'));
+        $filename = basename($request->input('filename'));
+        $parentPath = CloudHelper::decodePath($request->input('path'));
 
         // Store chunk in local temp directory
-        $chunkDir  = storage_path("app/chunks/{$uploadId}");
+        $chunkDir = storage_path("app/chunks/{$uploadId}");
         $chunkPath = "{$chunkDir}/chunk_{$chunkIndex}";
 
         if (! is_dir($chunkDir)) {
@@ -261,26 +300,26 @@ class FileController extends Controller
             }
 
             ProcessChunkUpload::dispatch(
-                userId:      Auth::id(),
+                userId: Auth::id(),
                 connectionId: $connection->id,
-                uploadId:    $uploadId,
-                chunkDir:    $chunkDir,
+                uploadId: $uploadId,
+                chunkDir: $chunkDir,
                 totalChunks: $totalChunks,
-                filename:    $filename,
-                parentPath:  $parentPath,
+                filename: $filename,
+                parentPath: $parentPath,
             );
 
             return response()->json([
-                'message'   => "'{$filename}' queued for processing.",
+                'message' => "'{$filename}' queued for processing.",
                 'upload_id' => $uploadId,
-                'queued'    => true,
+                'queued' => true,
             ]);
         }
 
         return response()->json([
             'message' => "Chunk {$chunkIndex} received.",
             'received' => $chunkIndex + 1,
-            'total'    => $totalChunks,
+            'total' => $totalChunks,
         ]);
     }
 
