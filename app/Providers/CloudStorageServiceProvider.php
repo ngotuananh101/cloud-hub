@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filesystem\OneDrive\LaravelOneDriveAdapter;
 use App\Filesystem\OneDrive\OneDriveAdapter;
 use App\Filesystem\OneDrive\OneDriveClient;
 use App\Filesystem\TelegramAdapter;
@@ -61,7 +62,7 @@ class CloudStorageServiceProvider extends ServiceProvider
 
             $adapter = new OneDriveAdapter($client, $config['root'] ?? '');
 
-            return new FilesystemAdapter(
+            return new LaravelOneDriveAdapter(
                 new Filesystem($adapter, $config),
                 $adapter,
                 $config

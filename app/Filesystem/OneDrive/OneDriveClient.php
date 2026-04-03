@@ -10,7 +10,7 @@ class OneDriveClient
 {
     protected Client $client;
     protected string $accessToken;
-    protected string $baseUrl = 'https://graph.microsoft.com/v1.0';
+    protected string $baseUrl = 'https://graph.microsoft.com/v1.0/';
     protected string $driveId;
 
     public function __construct(string $accessToken, string $driveId = 'me')
@@ -38,7 +38,10 @@ class OneDriveClient
 
     public function getRootUrl(): string
     {
-        return "/drives/{$this->driveId}/root";
+        if ($this->driveId === 'me') {
+            return "me/drive/root";
+        }
+        return "drives/{$this->driveId}/root";
     }
 
     public function getItemUrl(string $path): string
@@ -60,9 +63,12 @@ class OneDriveClient
 
     public function listChildren(string $path)
     {
-        $url = $this->getItemUrl($path) . ':/children';
+        $path = $this->normalizePath($path);
+        
         if ($path === '' || $path === '/') {
             $url = $this->getRootUrl() . '/children';
+        } else {
+            $url = $this->getItemUrl($path) . ':/children';
         }
 
         $response = $this->client->get($url);

@@ -215,6 +215,11 @@ class OneDriveAdapter implements FilesystemAdapter
         }
     }
 
+    public function providesTemporaryUrls(): bool
+    {
+        return true;
+    }
+
     public function temporaryUrl(string $path, \DateTimeInterface|string $expiration, array $options = []): string
     {
         try {
